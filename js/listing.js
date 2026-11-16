@@ -35,7 +35,8 @@ async function addMap(l) {
   if (typeof l.lat !== "number") return;
   try {
     if (!window.L) await new Promise((res, rej) => { const s = document.createElement("script"); s.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"; s.integrity = "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="; s.crossOrigin = ""; s.onload = res; s.onerror = rej; document.head.append(s); });
-    const map = L.map("lp-map", { scrollWheelZoom: false }).setView([l.lat, l.lng], 15);
+    const approx = !l.address && !l.postcode;
+    const map = L.map("lp-map", { scrollWheelZoom: false }).setView([l.lat, l.lng], approx ? 12 : 15);
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
     L.marker([l.lat, l.lng], { title: l.name, alt: l.name }).addTo(map);
   } catch { $("#lp-map").innerHTML = '<div class="empty" style="height:100%;display:grid;place-items:center">The map couldn\'t load.</div>'; }
@@ -51,7 +52,8 @@ async function start() {
   const c = CATS[l.category] || CATS.play;
   const web = safeUrl(l.website);
   const hasPin = typeof l.lat === "number";
-  const directions = hasPin ? `https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lng}` : (l.postcode ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(l.postcode)}` : "");
+  const approx = hasPin && !l.address && !l.postcode; // pin marks the area covered, not a venue
+  const directions = hasPin && !approx ? `https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lng}` : (l.postcode ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(l.postcode)}` : "");
   $("#crumb").textContent = l.name;
 
   $("#lp-loading").outerHTML = `
@@ -85,7 +87,7 @@ async function start() {
         </dl>
         <p class="note">Details can change, so check before you travel.</p>
       </div>
-      ${hasPin ? '<div id="lp-map" class="lp-map" role="region" aria-label="Map"></div>' : ""}
+      ${hasPin ? `<div id="lp-map" class="lp-map" role="region" aria-label="Map"></div>${approx ? '<p class="note" style="margin-top:6px">Pin shows the area they cover, not a venue.</p>' : ""}` : ""}
     </aside>
   </article>
   <section class="block" id="nearby-wrap" hidden>
