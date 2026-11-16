@@ -4,23 +4,30 @@ export const $ = s => document.querySelector(s);
 export const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const ICON = {
-  play: "M4 20V9l8-5 8 5v11M9 20v-6h6v6",
-  classes: "M12 3l9 5-9 5-9-5 9-5zM6 10.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-5.5",
-  cafes: "M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8zM16 10h2a3 3 0 0 1 0 6h-2M8 3v2M12 3v2",
-  parties: "M4 20l5-14 9 9-14 5zM14 4l1 2M19 9l2-1M17 3l-1 3",
-  childcare: "M12 21c-4 0-7-3-7-7 0-2 1-4 3-5M12 21c4 0 7-3 7-7 0-2-1-4-3-5M9 5a3 3 0 0 1 6 0",
-  health: "M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z",
-  shops: "M5 8h14l-1 12H6L5 8zM9 8V6a3 3 0 0 1 6 0v2",
-  sport: "M2 16c2-2 4-2 6 0s4 2 6 0 4-2 6 0M14 5a1.5 1.5 0 1 0 0 .01M8 12l3-4 4 2",
-  outdoors: "M12 21v-6M7 15h10l-5-11zM8 10h8",
+  play: "M5 20V6 M5 6h4 M9 6l8 14 M3 20h18 M5 11h4",
+  classes: "M3 6c3-1.5 6-1.5 9 0v13c-3-1.5-6-1.5-9 0z M12 6c3-1.5 6-1.5 9 0v13c-3-1.5-6-1.5-9 0z",
+  cafes: "M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z M17 10h1.5a2.5 2.5 0 0 1 0 5H17 M8 3c-1 1.5 1 2.5 0 4 M12 3c-1 1.5 1 2.5 0 4",
+  parties: "M12 3a5 5 0 0 1 5 5c0 3.5-3 6.5-5 6.5S7 11.5 7 8a5 5 0 0 1 5-5z M11 16h2 M12 16c0 2-2 3-1 5",
+  childcare: "M4 9h10a6 6 0 0 1-6 6H4z M14 9V4a5 5 0 0 1 5 5 M5.5 19a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0-3 0 M11.5 19a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0-3 0",
+  health: "M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z M12 10v5 M9.5 12.5h5",
+  shops: "M5 8h14l-1 12H6z M9 8V6a3 3 0 0 1 6 0v2",
+  sport: "M12 3a9 9 0 1 0 0.01 0z M3.5 9.5c4 1 13 1 17 0 M3.5 14.5c4-1 13-1 17 0 M12 3c-3 4-3 14 0 18",
+  outdoors: "M12 3l-5 7h3l-4 6h12l-4-6h3z M12 16v5",
 };
 export const icon = cat => `<svg viewBox="0 0 24 24" fill="none" stroke="#0F2A44" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICON[cat] || ICON.play}"/></svg>`;
+
+// "Little scene" placeholder for listings without a photo: sky, sun, two hills and the category icon.
+export function scene(cat) {
+  const c = CATS[cat] || CATS.play;
+  const d = ICON[cat] || ICON.play;
+  return `<svg class="scene" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="160" height="100" fill="${c.c}"/><circle cx="128" cy="40" r="9" fill="#fff" fill-opacity=".85"/><path d="M0 66 Q40 48 82 64 T160 56 V100 H0 Z" fill="${c.deep}" fill-opacity=".28"/><path d="M0 82 Q58 68 108 81 T160 77 V100 H0 Z" fill="#fff" fill-opacity=".75"/><g transform="translate(58 20) scale(1.8)"><path d="${d}" fill="none" stroke="#0F2A44" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></g></svg>`;
+}
 
 export const safeUrl = u => { if (!u) return ""; try { const x = new URL(u, location.href); return /^(https?:)$/.test(x.protocol) ? x.href : ""; } catch { return ""; } };
 
 export function thumb(l) {
   const c = CATS[l.category] || CATS.play;
-  const img = l.image_url ? `<img src="${esc(l.image_url)}" alt="" loading="lazy">` : icon(l.category);
+  const img = l.image_url ? `<img src="${esc(l.image_url)}" alt="" loading="lazy">` : scene(l.category);
   const price = l.price_band === 0 ? '<span class="tagpill free">Free</span>' : `<span class="tagpill">${PRICE[l.price_band] ?? ""}</span>`;
   return `<div class="thumb" style="background:${c.c}">${img}${price}${l.featured ? '<span class="tagpill feat">Featured</span>' : ""}</div>`;
 }

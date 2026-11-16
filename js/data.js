@@ -16,15 +16,15 @@ export async function sb() {
 export const AREAS = ["Central Bristol","North Bristol","South Bristol","East Bristol","Bradley Stoke","Keynsham","Portishead","Clevedon","Nailsea","Thornbury","Yate"];
 
 export const CATS = {
-  play:      { n: "Soft play & days out",   c: "#FFE6D6" },
-  classes:   { n: "Classes & clubs",        c: "#E3EEFF" },
-  cafes:     { n: "Family cafés",           c: "#FFF0CC" },
-  parties:   { n: "Parties",                c: "#F6E0EC" },
-  childcare: { n: "Nurseries & childcare",  c: "#FCE7DA" },
-  health:    { n: "Health & wellbeing",     c: "#DDF2E7" },
-  shops:     { n: "Shops",                  c: "#EFE6FB" },
-  sport:     { n: "Sport & swimming",       c: "#D9ECFA" },
-  outdoors:  { n: "Parks & outdoors",       c: "#DDF2E7" },
+  play:      { n: "Soft play & days out",   c: "#FFE7AE", deep: "#E0A83A" },
+  classes:   { n: "Classes & clubs",        c: "#DCE5FF", deep: "#4C6FD6" },
+  cafes:     { n: "Family cafés",           c: "#F7DDCB", deep: "#C2703D" },
+  parties:   { n: "Parties",                c: "#F9D3E0", deep: "#D2557E" },
+  childcare: { n: "Nurseries & childcare",  c: "#E8DDF8", deep: "#7E5BC2" },
+  health:    { n: "Health & wellbeing",     c: "#CDEFE5", deep: "#1F9A7A" },
+  shops:     { n: "Shops",                  c: "#D3EAF2", deep: "#3C8DAD" },
+  sport:     { n: "Sport & swimming",       c: "#D5E6F5", deep: "#1C5C8C" },
+  outdoors:  { n: "Parks & outdoors",       c: "#D2EDDD", deep: "#0B6B4F" },
 };
 
 export const PRICE = ["Free", "Under £5", "£5 to £10", "£10+"];

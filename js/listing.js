@@ -1,5 +1,5 @@
 import { fetchListing, fetchListings, CATS, PRICE, slugify, listingUrl } from "./data.js";
-import { $, esc, icon, card, initHeader, wireModal, openListing, ageText, safeUrl, share } from "./ui.js";
+import { $, esc, icon, scene, card, initHeader, wireModal, openListing, ageText, safeUrl, share } from "./ui.js";
 import { handleClaim } from "./claim.js";
 
 initHeader();
@@ -58,7 +58,7 @@ async function start() {
   <article class="lp-grid">
     <div class="lp-main">
       <div class="lp-hero" style="background:${c.c}">
-        ${l.image_url ? `<img src="${esc(l.image_url)}" alt="${esc(l.name)}">` : icon(l.category)}
+        ${l.image_url ? `<img src="${esc(l.image_url)}" alt="${esc(l.name)}">` : scene(l.category)}
         <span class="tagpill ${l.price_band === 0 ? "free" : ""}">${PRICE[l.price_band] ?? ""}</span>
         ${l.featured ? '<span class="tagpill feat">Featured</span>' : ""}
       </div>
