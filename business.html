@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>For businesses · Bristol Free & Affordable</title>
+<meta name="description" content="Free and affordable family days out, classes, cafés and local deals across Bristol and nearby towns.">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<a class="sr" href="#main">Skip to content</a>
+<header class="site">
+  <div class="wrap nav">
+    <a href="/" class="logo" aria-label="Bristol Free and Affordable, home">
+      <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true"><rect width="46" height="46" rx="14" fill="#0F2A44"/><path d="M8 28 Q23 12 38 28" stroke="#BFEBD9" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M8 28 H38" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M14 28 V23 M23 28 V20 M32 28 V23" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M8 34 q3.75-2.5 7.5 0 t7.5 0 t7.5 0 t7.5 0" stroke="#BFEBD9" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      <span><b>Bristol Free</b><small>&amp; Affordable</small></span>
+    </a>
+    <button class="burger" aria-label="Menu" aria-expanded="false" aria-controls="links"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="#0F2A44" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <nav class="links" id="links" aria-label="Main">
+      <a href="/directory.html">Things to do</a>
+      <a href="/business.html" class="cta" aria-current="page">For businesses</a>
+    </nav>
+  </div>
+</header>
+<main id="main">
+<div class="wrap">
+  <div class="page-head"><h1>Get your business listed, free</h1><p>Every family-friendly business in and around Bristol can have a free listing in front of 20,000+ local parents. Already listed? Open your listing in the directory and tap "Claim this listing".</p></div>
+  <div class="duo" style="margin-bottom:28px">
+    <div class="mint"><h2>Free listing</h2><p>Name, area, category, opening hours, a photo and a link to your website, found by parents filtering by area, age and budget.</p></div>
+    <div class="dark"><h2>Coming soon</h2><p>Member deals for our family card, a business scanner and Featured spots. Leave your details and we'll let you know first.</p></div>
+  </div>
+  <form class="claim" id="biz-form" novalidate style="max-width:680px;padding:28px;border-radius:24px">
+    <h2 style="font-size:26px">Tell us about your business</h2>
+    <input class="hp" name="website_hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <label class="field">Business name<input name="business_name" required maxlength="200"></label>
+    <div class="two"><label class="field">Your name<input name="contact_name" required maxlength="200" autocomplete="name"></label><label class="field">Email<input name="email" type="email" required maxlength="320" autocomplete="email"></label></div>
+    <label class="field">Phone (optional)<input name="phone" maxlength="50" autocomplete="tel"></label>
+    <label class="field">Where are you, and what do you offer families?<textarea name="message" rows="4" maxlength="2000"></textarea></label>
+    <p class="err" role="alert" hidden></p>
+    <button class="btn">Send</button>
+  </form>
+</div>
+</main>
+<footer class="site"><div class="wrap foot">
+  <span>Bristol Free &amp; Affordable · made by local parents, for local parents</span>
+  <nav aria-label="Footer"><a href="/directory.html">Things to do</a><a href="/business.html">For businesses</a><a href="/admin.html">Admin</a></nav>
+</div></footer>
+<div class="modal" id="modal"><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="m-title"></div></div>
+<script type="module" src="/js/business.js"></script>
+</body>
+</html>

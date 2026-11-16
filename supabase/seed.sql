@@ -1,0 +1,24 @@
+-- Optional: sample listings for testing. Paste into Supabase > SQL Editor and Run.
+-- Delete them later from the admin page, or run: delete from public.listings where image_url like '/img/%';
+insert into public.listings (name, category, area, description, price_band, ages, image_url, lat, lng, claimed, featured, status) values
+('Meadowbank Adventure Park', 'outdoors', 'North Bristol', 'Big wooden play park, sandpit and picnic lawn. Free all year round.', 0, array['toddler','kids']::text[], '/img/park.jpg', 51.48327, -2.59757, true, true, 'published'),
+('Library Rhyme Time', 'classes', 'Central Bristol', 'Free weekly songs and stories for under-5s. Just turn up.', 0, array['baby','toddler']::text[], '/img/library.jpg', 51.45812, -2.60329, true, false, 'published'),
+('Seafront Splash Pad', 'outdoors', 'Clevedon', 'Summer water jets by the seafront, with benches and toilets nearby.', 0, array['toddler','kids']::text[], '/img/splash.jpg', 51.43886, -2.85884, true, false, 'published'),
+('Sunday Junior Fun Run', 'sport', 'South Bristol', 'Free, friendly 2k run for ages 4 to 14 every Sunday morning.', 0, array['kids']::text[], '/img/funrun.jpg', 51.43039, -2.59973, true, false, 'published'),
+('Woodland Trail & Bug Hunt', 'outdoors', 'Nailsea', 'Pushchair-friendly woodland trail with a free spotter sheet.', 0, array['toddler','kids']::text[], '/img/woodland.jpg', 51.4199, -2.76039, true, false, 'published'),
+('Jumping Jellybeans', 'play', 'East Bristol', 'Three-tier play frame, toddler zone and a café with proper coffee.', 2, array['toddler','kids']::text[], '/img/softplay.jpg', 51.45968, -2.54473, true, true, 'published'),
+('Little Picassos Art Club', 'classes', 'North Bristol', 'Messy play and art classes. They tidy up, you take the masterpiece home.', 2, array['toddler','kids']::text[], '/img/art.jpg', 51.48569, -2.57323, true, true, 'published'),
+('The Harbour Pantry', 'cafes', 'Portishead', 'Marina-side café with high chairs, a kids'' menu and a play corner.', 1, array['baby','toddler','kids']::text[], '/img/pantry.jpg', 51.47497, -2.77796, true, false, 'published'),
+('Splash Academy', 'sport', 'Keynsham', 'Small-group swimming lessons from 3 months in a warm teaching pool.', 3, array['baby','toddler','kids']::text[], '/img/swim.jpg', 51.41656, -2.48188, false, false, 'published'),
+('Party Pandas', 'parties', 'South Bristol', 'Entertainers, games, bubbles and balloon modelling. They bring everything.', 3, array['toddler','kids']::text[], '/img/party.jpg', 51.44285, -2.60372, true, false, 'published'),
+('Acorn Tree Nursery', 'childcare', 'Nailsea', 'Nursery with a forest-school garden and flexible sessions.', 3, array['baby','toddler']::text[], '/img/nursery.jpg', 51.44243, -2.77432, false, false, 'published'),
+('Tiny Toes Baby Massage', 'health', 'Clevedon', 'Relaxed baby massage and baby yoga courses for new parents.', 2, array['baby']::text[], '/img/massage.jpg', 51.4466, -2.86157, false, false, 'published'),
+('Pip & Pebble Toy Shop', 'shops', 'Thornbury', 'Independent toy shop with wooden toys, books and gift wrapping.', 1, array['baby','toddler','kids']::text[], '/img/toyshop.jpg', 51.60046, -2.53876, true, false, 'published'),
+('Kickstart Football', 'sport', 'Bradley Stoke', 'Fun, friendly football sessions and holiday camps for ages 4 to 11.', 1, array['kids']::text[], '/img/football.jpg', 51.5254, -2.53362, true, false, 'published'),
+('Stage Sparks Drama', 'classes', 'Central Bristol', 'Weekly drama, singing and dance, with a show at the end of every term.', 2, array['kids','teen']::text[], '/img/drama.jpg', 51.44684, -2.58496, false, false, 'published'),
+('Wild Woods Adventure Farm', 'play', 'Yate', 'Animal feeding, tractor rides and an outdoor play barn.', 2, array['toddler','kids']::text[], '/img/farm.jpg', 51.54333, -2.41559, true, true, 'published'),
+('Beanbag Coffee House', 'cafes', 'North Bristol', 'Buggy-friendly café that hosts weekly baby and toddler meet-ups.', 1, array['baby','toddler']::text[], '/img/beanbag.jpg', 51.48865, -2.60074, true, false, 'published'),
+('Code Club Juniors', 'classes', 'Keynsham', 'After-school coding, robotics and game design clubs.', 2, array['kids','teen']::text[], '/img/coding.jpg', 51.40293, -2.50859, false, false, 'published'),
+('Mini Medics First Aid', 'health', 'South Bristol', 'Paediatric first aid courses for parents and carers.', 2, array['baby','toddler','kids']::text[], '/img/firstaid.jpg', 51.44533, -2.60261, true, false, 'published'),
+('Bounce Bonanza Hire', 'parties', 'Portishead', 'Bouncy castle and soft play hire for parties across North Somerset.', 3, array['toddler','kids']::text[], '/img/bouncy.jpg', 51.47954, -2.76492, false, false, 'published'),
+('Seedlings Childminding', 'childcare', 'East Bristol', 'Small home-based setting with school drop-offs and pick-ups.', 3, array['baby','toddler','kids']::text[], '/img/childminder.jpg', 51.46888, -2.53721, false, false, 'published');

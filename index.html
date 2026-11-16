@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bristol Free & Affordable · family days out that don't cost a thing</title>
+<meta name="description" content="Free and affordable family days out, classes, cafés and local deals across Bristol and nearby towns.">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="over">
+<a class="sr" href="#main">Skip to content</a>
+<header class="site">
+  <div class="wrap nav">
+    <a href="/" class="logo" aria-label="Bristol Free and Affordable, home">
+      <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true"><rect width="46" height="46" rx="14" fill="#0F2A44"/><path d="M8 28 Q23 12 38 28" stroke="#BFEBD9" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M8 28 H38" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M14 28 V23 M23 28 V20 M32 28 V23" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M8 34 q3.75-2.5 7.5 0 t7.5 0 t7.5 0 t7.5 0" stroke="#BFEBD9" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      <span><b>Bristol Free</b><small>&amp; Affordable</small></span>
+    </a>
+    <button class="burger" aria-label="Menu" aria-expanded="false" aria-controls="links"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="#0F2A44" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <nav class="links" id="links" aria-label="Main">
+      <a href="/directory.html">Things to do</a>
+      <a href="/business.html" class="cta">For businesses</a>
+    </nav>
+  </div>
+</header>
+<main id="main">
+<div class="hero">
+  <div class="hero-card"><div class="wrap"><div class="hero-in">
+    <span class="pill">A community of 20,000+ Bristol parents</span>
+    <h1>Good days out don't have to cost a thing.</h1>
+    <p class="lead">Free and low-cost activities, family-friendly places and local businesses across Bristol and the towns around it.</p>
+    <form class="finder" action="/directory.html" method="get">
+      <div class="row">
+        <label class="field">What<input name="q" placeholder="Soft play, swimming…"></label>
+        <label class="field">Where<select name="area" id="h-area"><option value="">Anywhere</option></select></label>
+        <label class="field">Budget<select name="price"><option value="0">Free only</option><option value="1">Under £5</option><option value="2">£5 to £10</option><option value="" selected>Any</option></select></label>
+      </div>
+      <button class="btn">Show me ideas</button>
+    </form>
+  </div></div></div>
+</div>
+
+<section class="block"><div class="wrap">
+  <h2 style="font-size:22px;margin-bottom:16px">Explore near you</h2>
+  <div class="chips" id="area-links"></div>
+</div></section>
+
+<section class="band"><div class="wrap">
+  <div class="sec-head"><div><h2>Totally free</h2><p>Zero-cost ideas from the community.</p></div><a class="more" href="/directory.html?price=0">See all free things</a></div>
+  <div class="grid" id="free"></div>
+</div></section>
+
+<section class="block"><div class="wrap">
+  <div class="sec-head"><div><h2>Browse by type</h2><p>Classes, cafés, soft play, parties and more.</p></div><a class="more" href="/directory.html">Full directory</a></div>
+  <div class="chips" id="cat-links"></div>
+</div></section>
+
+<section class="block"><div class="wrap">
+  <div class="sec-head"><div><h2>Featured places</h2><p>Local favourites.</p></div></div>
+  <div class="grid" id="featured"></div>
+</div></section>
+
+<section class="block"><div class="wrap duo">
+  <div class="mint"><h2>Know a great family place?</h2><p>Tell us about it and we'll add it to the directory for free.</p><a class="btn" href="/business.html" style="align-self:flex-start">Suggest a place</a></div>
+  <div class="dark"><h2>Run a family business?</h2><p>Every family-friendly business in and around Bristol can be listed for free. Already listed? Claim your page to keep it up to date.</p><a class="btn light" href="/business.html" style="align-self:flex-start">Get listed free</a></div>
+</div></section>
+</main>
+<footer class="site"><div class="wrap foot">
+  <span>Bristol Free &amp; Affordable · made by local parents, for local parents</span>
+  <nav aria-label="Footer"><a href="/directory.html">Things to do</a><a href="/business.html">For businesses</a><a href="/admin.html">Admin</a></nav>
+</div></footer>
+<div class="modal" id="modal"><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="m-title"></div></div>
+<script type="module" src="/js/home.js"></script>
+</body>
+</html>
