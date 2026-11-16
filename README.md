@@ -34,7 +34,7 @@ Every change pushed to GitHub goes live automatically.
 Repeat for anyone else who should manage listings.
 
 ## 4. Turn off public sign-ups
-Supabase → **Authentication → Sign In / Providers → Email**: turn off **Allow new users to sign up**. Admins are added by you only.
+Supabase → **Authentication → Sign In / Providers**: in the **User Signups** section at the top, turn off **Allow new users to sign up**. Leave **Enable email provider** ON, or you won't be able to sign in. Admins are added by you only.
 
 ## Files
 | Path | What it is |
