@@ -1,11 +1,13 @@
 :root{
   --navy:#0F2A44; --navy-2:#1C5C8C; --text-2:#3B5068; --line:#D5E3F0;
   --sky:#EAF3FB; --mint:#BFEBD9; --mint-band:#EEF8F3; --mint-ink:#0B6B4F;
-  --sun:#FFD27A; --r:22px; --shadow:0 10px 30px rgba(15,42,68,.08);
+  --sun:#FFD27A; --r:22px;
+  --paper:#FBF8F3; --butter:#FFF3D3; --mintp:#E2F4EA; --lavender:#EFE9FA; --peach:#FDE8DC; --periwinkle:#E6EDFD; --pink:#FCE6EE; --skyp:#E5EFF8;
+  --tone:var(--paper); --shadow:0 10px 30px rgba(15,42,68,.08);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 [hidden]{display:none!important}
-body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:#fff;color:var(--navy);line-height:1.55}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--paper);overflow-x:clip;color:var(--navy);line-height:1.55}
 h1,h2,h3{font-weight:800;letter-spacing:-.03em;line-height:1.1}
 a{color:inherit}
 a:hover{color:var(--navy-2)}
@@ -21,7 +23,7 @@ img{max-width:100%}
 .demo-bar b{color:var(--mint)}
 
 /* header */
-header.site{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border-bottom:1px solid #EEF3F8}
+header.site{position:sticky;top:0;z-index:1000;background:rgba(251,248,243,.95);backdrop-filter:blur(8px);border-bottom:1px solid #EFE8DC}
 .nav{display:flex;align-items:center;justify-content:space-between;height:76px;gap:16px}
 .logo{display:flex;align-items:center;gap:12px;text-decoration:none}
 .logo b{display:block;font-weight:800;font-size:20px;letter-spacing:-.02em;line-height:1.1}
@@ -153,7 +155,7 @@ section.block{padding:36px 0}
 .duo .dark{background:var(--navy);color:#fff}
 .duo .dark p{color:#D5E3F0}
 
-footer.site{margin-top:40px;background:#F5F9FD}
+footer.site{margin-top:40px;background:var(--skyp)}
 .foot{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;padding-top:28px;padding-bottom:28px;font-size:14px;color:var(--text-2)}
 .foot nav{display:flex;gap:18px;flex-wrap:wrap}
 
@@ -185,7 +187,7 @@ fieldset.field legend{margin-bottom:4px}
 .lp-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
 .lp-side{display:flex;flex-direction:column;gap:18px;position:sticky;top:96px}
 @media(max-width:900px){.lp-side{position:static}}
-.panel{border:1px solid var(--line);border-radius:22px;padding:22px}
+.panel{border:1px solid #ECE4D6;border-radius:22px;padding:22px;background:#fff}
 .lp-facts h2{font-size:20px;margin-bottom:12px}
 .lp-facts dl{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:15px}
 .lp-facts dt{font-weight:700;color:var(--text-2)}
@@ -349,3 +351,39 @@ a.card{text-decoration:none}
 .how ol{display:grid;gap:8px;padding-left:20px;margin:10px 0}
 .kindset{display:grid;gap:8px;border:1px solid var(--line);border-radius:16px;padding:14px}
 .kindset legend{font-weight:700;padding:0 6px}
+
+/* ---------- pastel colour bands ---------- */
+.t-paper{--tone:var(--paper)}.t-butter{--tone:var(--butter)}.t-mint{--tone:var(--mintp)}.t-lavender{--tone:var(--lavender)}
+.t-peach{--tone:var(--peach)}.t-periwinkle{--tone:var(--periwinkle)}.t-pink{--tone:var(--pink)}.t-sky{--tone:var(--skyp)}
+/* soft wave along the top edge of each band, echoing the hills in the placeholder pictures */
+.tone{background:var(--tone);position:relative;margin-top:40px;padding:40px 0 52px}
+.tone::before{content:"";position:absolute;left:0;right:0;top:-39px;height:40px;background:var(--tone);pointer-events:none;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 40' preserveAspectRatio='none'%3E%3Cpath d='M0 40V22Q240 0 520 18T1040 16T1440 12V40Z'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 40' preserveAspectRatio='none'%3E%3Cpath d='M0 40V22Q240 0 520 18T1040 16T1440 12V40Z'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
+.tone:nth-of-type(even)::before{transform:scaleX(-1)}
+section.tone + section.tone{margin-top:40px}
+.hero + .tone{margin-top:0}
+.hero + .tone::before{display:none}
+/* white cards sit on top of the colour as the highlight */
+.tone .card{background:#fff;border-radius:var(--r);overflow:hidden;padding-bottom:16px;box-shadow:0 6px 20px rgba(15,42,68,.06)}
+.tone .card .thumb{border-radius:0}
+.tone .card .body{padding:0 16px}
+.tone .chip,.tone .ev,.tone .deal{background:#fff;border-color:transparent;box-shadow:0 1px 0 rgba(15,42,68,.06)}
+.tone .empty{background:rgba(255,255,255,.6)}
+.tone .duo .mint{background:#fff;border:2px dashed var(--mint)}
+/* inner pages: the page title sits in a coloured band */
+.page-head,.card-app>.card-intro,.staff-head{position:relative}
+.page-head::after{content:"";position:absolute;z-index:-1;top:-44px;bottom:-30px;left:calc(50% - 50vw);right:calc(50% - 50vw);background:var(--tone);
+  -webkit-mask:linear-gradient(#000 calc(100% - 40px),transparent calc(100% - 40px)),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 40' preserveAspectRatio='none'%3E%3Cpath d='M0 0H1440V20Q1100 40 720 18T0 22Z'/%3E%3C/svg%3E") 0 100%/100% 40px no-repeat;
+          mask:linear-gradient(#000 calc(100% - 40px),transparent calc(100% - 40px)),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 40' preserveAspectRatio='none'%3E%3Cpath d='M0 0H1440V20Q1100 40 720 18T0 22Z'/%3E%3C/svg%3E") 0 100%/100% 40px no-repeat}
+html{overflow-x:clip}
+main{position:relative;z-index:0}
+.page-head{margin-bottom:34px}
+/* pages without a page-head get a gentle wash at the top instead */
+body.wash main{background:linear-gradient(var(--tone),var(--paper) 420px)}
+.verify{background:#fff}
+.verify.good{background:#E8F8EF}.verify.warn{background:#FFF6E0}.verify.bad{background:#FDECEC}
+.fcard-wrap .panel,.savings{background:#fff}
+.cal{background:#fff}
+.links{background:transparent}
+@media(max-width:1080px){.links{background:var(--paper)}}
