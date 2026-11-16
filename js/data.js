@@ -50,3 +50,14 @@ export async function submitClaim(row) {
   if (error) throw error;
   return {};
 }
+
+export const slugify = t => String(t || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+export const listingUrl = l => `/place/${encodeURIComponent(l.slug || slugify(l.name))}`;
+
+export async function fetchListing(slug) {
+  if (DEMO) return DEMO_LISTINGS.find(l => slugify(l.name) === slug) || null;
+  const c = await sb();
+  const { data, error } = await c.from("listings").select("*").eq("slug", slug).eq("status", "published").maybeSingle();
+  if (error) throw error;
+  return data;
+}

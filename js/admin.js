@@ -1,4 +1,4 @@
-import { DEMO, sb, AREAS, CATS, PRICE } from "./data.js";
+import { DEMO, sb, AREAS, CATS, PRICE, listingUrl } from "./data.js";
 import { DEMO_LISTINGS } from "./demo-data.js";
 import { $, esc, initHeader, readForm } from "./ui.js";
 
@@ -91,7 +91,7 @@ function renderListings() {
       ${l.image_url ? `<img src="${esc(l.image_url)}" alt="">` : '<span class="ph"></span>'}
       <div class="grow"><b>${esc(l.name)}</b><span class="sub">${esc(l.area)} · ${esc(CATS[l.category]?.n || l.category)} · ${PRICE[l.price_band]}</span></div>
       ${l.status === "draft" ? '<span class="badge draft">Draft</span>' : ""}${l.featured ? '<span class="badge">Featured</span>' : ""}${l.claimed ? '<span class="badge">Claimed</span>' : ""}${l.lat == null ? '<span class="badge draft">No map pin</span>' : ""}
-      ${l.status === "draft" ? `<button class="btn" data-pub="${esc(l.id)}">Publish</button>` : ""}<button class="btn ghost" data-edit="${esc(l.id)}">Edit</button></div>`).join("")
+      ${l.status === "draft" ? `<button class="btn" data-pub="${esc(l.id)}">Publish</button>` : `<a class="btn ghost" href="${listingUrl(l)}" target="_blank" rel="noopener">View page</a>`}<button class="btn ghost" data-edit="${esc(l.id)}">Edit</button></div>`).join("")
     : '<div class="empty">No listings yet. Click "Add listing" to create the first one.</div>';
 }
 function renderRequests() {

@@ -1,4 +1,4 @@
-import { CATS, PRICE, AGES, DEMO } from "./data.js";
+import { CATS, PRICE, AGES, DEMO, listingUrl } from "./data.js";
 
 export const $ = s => document.querySelector(s);
 export const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
@@ -47,7 +47,6 @@ export function openListing(l, { onClaim } = {}) {
   lastFocus = document.activeElement;
   const c = CATS[l.category] || CATS.play;
   const web = safeUrl(l.website);
-  const dir = l.lat && l.lng ? `https://www.openstreetmap.org/?mlat=${l.lat}&mlon=${l.lng}#map=17/${l.lat}/${l.lng}` : "";
   $("#sheet").innerHTML = `
     <button class="x" aria-label="Close">✕</button>${thumb(l)}
     <div class="in">
@@ -62,8 +61,9 @@ export function openListing(l, { onClaim } = {}) {
         ${l.phone ? `<div><b>Phone:</b> ${esc(l.phone)}</div>` : ""}
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        ${web ? `<a class="btn" href="${esc(web)}" target="_blank" rel="noopener">Visit website</a>` : ""}
-        ${dir ? `<a class="btn ghost" href="${dir}" target="_blank" rel="noopener">Open in map</a>` : ""}
+        <a class="btn" href="${listingUrl(l)}">View full page</a>
+        ${web ? `<a class="btn ghost" href="${esc(web)}" target="_blank" rel="noopener">Visit website</a>` : ""}
+        <button type="button" class="btn ghost" data-share="${esc(listingUrl(l))}" data-title="${esc(l.name)}">Share</button>
       </div>
       ${l.photo_credit ? `<p class="note">${esc(l.photo_credit)}</p>` : ""}
       ${l.claimed ? "" : claimBlock(l)}
@@ -74,6 +74,7 @@ export function openListing(l, { onClaim } = {}) {
   m.querySelector(".x").focus();
   const f = m.querySelector("#claim-form");
   if (f) f.addEventListener("submit", e => onClaim && onClaim(e, l));
+  m.querySelector("[data-share]")?.addEventListener("click", e => share(e.currentTarget));
   const t = m.querySelector("#claim-toggle");
   if (t) t.addEventListener("click", () => { f.hidden = false; t.hidden = true; f.querySelector("input[name=contact_name]").focus(); });
 }
@@ -112,3 +113,18 @@ export function readForm(f) {
   return d;
 }
 export const validEmail = e => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
+/* share a listing: native share sheet on phones, copy link elsewhere */
+export async function share(btn) {
+  const url = new URL(btn.dataset.share, location.origin).href, title = btn.dataset.title || document.title;
+  const label = btn.textContent;
+  try {
+    if (navigator.share) { await navigator.share({ title, text: `${title} on Bristol Free & Affordable`, url }); return; }
+    await navigator.clipboard.writeText(url);
+    btn.textContent = "Link copied!";
+  } catch (e) {
+    if (e?.name === "AbortError") return;
+    btn.textContent = url;
+  }
+  setTimeout(() => { btn.textContent = label; }, 2000);
+}
