@@ -81,14 +81,17 @@ async function showApp() {
   try { await loadAll(); } catch { $("#alist").innerHTML = '<div class="empty">Couldn\'t load listings. Check the Supabase details in js/config.js.</div>'; return; }
   renderListings(); renderRequests();
 }
+let statusFilter = "";
 function renderListings() {
   const q = $("#aq").value.toLowerCase().trim();
-  const list = listings.filter(l => !q || `${l.name} ${l.area}`.toLowerCase().includes(q));
+  const drafts = listings.filter(l => l.status === "draft").length;
+  $("#dcount").textContent = drafts ? `(${drafts})` : "";
+  const list = listings.filter(l => (!q || `${l.name} ${l.area}`.toLowerCase().includes(q)) && (!statusFilter || l.status === statusFilter));
   $("#alist").innerHTML = list.length ? list.map(l => `<div class="adm-row">
       ${l.image_url ? `<img src="${esc(l.image_url)}" alt="">` : '<span class="ph"></span>'}
       <div class="grow"><b>${esc(l.name)}</b><span class="sub">${esc(l.area)} · ${esc(CATS[l.category]?.n || l.category)} · ${PRICE[l.price_band]}</span></div>
       ${l.status === "draft" ? '<span class="badge draft">Draft</span>' : ""}${l.featured ? '<span class="badge">Featured</span>' : ""}${l.claimed ? '<span class="badge">Claimed</span>' : ""}${l.lat == null ? '<span class="badge draft">No map pin</span>' : ""}
-      <button class="btn ghost" data-edit="${esc(l.id)}">Edit</button></div>`).join("")
+      ${l.status === "draft" ? `<button class="btn" data-pub="${esc(l.id)}">Publish</button>` : ""}<button class="btn ghost" data-edit="${esc(l.id)}">Edit</button></div>`).join("")
     : '<div class="empty">No listings yet. Click "Add listing" to create the first one.</div>';
 }
 function renderRequests() {
@@ -102,7 +105,46 @@ function renderRequests() {
     </div>`).join("") : '<div class="empty">No requests yet. Claims and "list my business" forms will appear here.</div>';
 }
 $("#aq").addEventListener("input", renderListings);
-$("#alist").addEventListener("click", e => { const b = e.target.closest("[data-edit]"); if (b) openEditor(listings.find(l => String(l.id) === b.dataset.edit)); });
+$("#sfilter").addEventListener("click", e => {
+  const b = e.target.closest("[data-s]"); if (!b) return;
+  statusFilter = b.dataset.s;
+  $("#sfilter").querySelectorAll("[data-s]").forEach(x => { const on = x === b; x.classList.toggle("on", on); x.setAttribute("aria-pressed", String(on)); });
+  renderListings();
+});
+$("#alist").addEventListener("click", async e => {
+  const ed = e.target.closest("[data-edit]"); if (ed) return openEditor(listings.find(l => String(l.id) === ed.dataset.edit));
+  const pb = e.target.closest("[data-pub]"); if (!pb) return;
+  const l = listings.find(x => String(x.id) === pb.dataset.pub);
+  pb.disabled = true; pb.textContent = "Publishing…";
+  try {
+    if (DEMO) l.status = "published";
+    else { const { error } = await client.from("listings").update({ status: "published" }).eq("id", l.id); if (error) throw error; l.status = "published"; }
+    renderListings();
+  } catch { pb.disabled = false; pb.textContent = "Publish"; $("#pins-msg").textContent = `Couldn't publish ${l.name}. Please try again.`; }
+});
+
+/* fill in map pins from postcodes (postcodes.io, free, no key) */
+$("#pins").addEventListener("click", async () => {
+  const msg = $("#pins-msg"), btn = $("#pins");
+  const todo = listings.filter(l => l.lat == null && l.postcode);
+  if (!todo.length) { msg.textContent = "Every listing with a postcode already has a map pin."; return; }
+  btn.disabled = true; msg.textContent = `Looking up ${todo.length} postcode${todo.length > 1 ? "s" : ""}…`;
+  try {
+    const r = await fetch("https://api.postcodes.io/postcodes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ postcodes: todo.map(l => l.postcode) }) });
+    const j = await r.json();
+    let ok = 0; const missed = [];
+    for (const [i, res] of (j.result || []).entries()) {
+      const l = todo[i];
+      if (!res.result) { missed.push(l.name); continue; }
+      const lat = +res.result.latitude.toFixed(6), lng = +res.result.longitude.toFixed(6);
+      if (!DEMO) { const { error } = await client.from("listings").update({ lat, lng }).eq("id", l.id); if (error) { missed.push(l.name); continue; } }
+      l.lat = lat; l.lng = lng; ok++;
+    }
+    msg.textContent = `Placed ${ok} pin${ok === 1 ? "" : "s"}.` + (missed.length ? ` Couldn't find: ${missed.join(", ")}. Open those and tap the map instead.` : " Check them in each listing's editor if you want to fine-tune the position.");
+    renderListings();
+  } catch { msg.textContent = "Couldn't reach the postcode service. Please try again in a moment."; }
+  finally { btn.disabled = false; }
+});
 $("#rlist").addEventListener("click", async e => {
   const b = e.target.closest("[data-done]"); if (!b) return;
   const r = requests.find(x => String(x.id) === b.dataset.done);

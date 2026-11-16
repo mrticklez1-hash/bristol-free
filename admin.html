@@ -52,7 +52,16 @@
     </div>
 
     <div id="pane-l">
-      <label class="field" style="max-width:420px;margin-bottom:14px">Search listings<input type="search" id="aq" placeholder="Name or area…"></label>
+      <div class="dir-tools" style="margin-top:0;align-items:flex-end">
+        <label class="field" style="flex:1;max-width:420px">Search listings<input type="search" id="aq" placeholder="Name or area…"></label>
+        <div class="chips" id="sfilter" role="group" aria-label="Show">
+          <button type="button" class="chip on" data-s="" aria-pressed="true">All</button>
+          <button type="button" class="chip" data-s="draft" aria-pressed="false">Drafts <span id="dcount"></span></button>
+          <button type="button" class="chip" data-s="published" aria-pressed="false">Published</button>
+        </div>
+        <button type="button" class="btn ghost" id="pins">Place missing map pins</button>
+      </div>
+      <p class="note" id="pins-msg" role="status" style="margin-bottom:10px"></p>
       <div id="alist" class="adm-list"></div>
     </div>
     <div id="pane-r" hidden><div id="rlist" class="adm-list"></div></div>
