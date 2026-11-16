@@ -49,4 +49,4 @@ Supabase → **Authentication → Sign In / Providers**: in the **User Signups**
 | `supabase/schema.sql`, `supabase/seed.sql` | Database setup and sample data |
 
 ## Credits
-Map tiles © OpenStreetMap contributors and CARTO. Postcode lookup by postcodes.io.
+Map tiles © OpenStreetMap contributors. Postcode lookup by postcodes.io.
