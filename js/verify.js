@@ -17,6 +17,7 @@ const show = (kind, title, body) => {
 
 async function run() {
   let r;
+  if (t.startsWith("sample.")) return show("good", "Valid family card", '<p class="v-name">Sam</p><p>This is the sample card, so a business can see what a scan looks like.</p>');
   if (DEMO) r = t.startsWith("demo.") ? { valid: true, first_name: "Sam", since: new Date().toISOString() } : { valid: false, reason: "not_a_card" };
   else {
     try { const c = await sb(); const { data, error } = await c.rpc("verify_card", { t }); if (error) throw error; r = data; }

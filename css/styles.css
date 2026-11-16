@@ -308,3 +308,23 @@ a.card{text-decoration:none}
 .adm-tabs button.on{background:var(--navy);border-color:var(--navy);color:#fff}
 .adm-row.past{opacity:.55}
 .adm-row pre{white-space:pre-wrap;font:inherit;font-size:13px;color:var(--text-2);margin-top:4px}
+
+/* savings tracker */
+.sample-bar{background:#FFF4D6;color:#7A5600;border-radius:14px;padding:12px 16px;font-size:14px;max-width:560px;margin:0 auto 16px;text-align:center}
+.sample-bar b{margin-right:6px}
+.fcard-wrap{max-width:440px}
+.savings{display:grid;gap:16px}
+.sv-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.sv-top>div{display:flex;flex-direction:column}
+.sv-total{font-size:44px;font-weight:800;letter-spacing:-.03em;line-height:1.05;color:var(--mint-ink)}
+.sv-month{text-align:right;background:var(--mint-band);border-radius:14px;padding:10px 14px}
+.sv-month b{font-size:22px;color:var(--mint-ink)}
+.sv-form{display:grid;grid-template-columns:1fr 110px;gap:10px;align-items:end;background:var(--sky);border-radius:16px;padding:14px}
+.sv-form .field:first-child,.sv-form #sv-label-wrap,.sv-form .err,.sv-form .btn{grid-column:1/-1}
+.sv-form .field:has([name=amount]){grid-column:1/-1}
+.sv-list{list-style:none;display:grid}
+.sv-list li{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.sv-list li>span:first-child{display:flex;flex-direction:column;min-width:0}
+.sv-amt{font-weight:800;color:var(--mint-ink)}
+.sv-del{border:0;background:none;width:36px;height:36px;border-radius:10px;color:var(--text-2)}
+.sv-del:hover{background:var(--sky)}

@@ -1,9 +1,9 @@
-import { DEMO, sb } from "./data.js";
+import { DEMO, sb, fetchDeals } from "./data.js";
 import { $, esc, initHeader, readForm, validEmail } from "./ui.js";
 
 initHeader();
 const app = $("#card-app");
-let client = null, timer = null, clock = null;
+let client = null, timer = null, clock = null, preview = false;
 
 const LOGO = `<svg width="40" height="40" viewBox="0 0 46 46" aria-hidden="true"><rect width="46" height="46" rx="14" fill="#fff"/><path d="M8 28 Q23 12 38 28" stroke="#1C5C8C" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M8 28 H38" stroke="#0F2A44" stroke-width="2.6" stroke-linecap="round"/><path d="M14 28 V23 M23 28 V20 M32 28 V23" stroke="#0F2A44" stroke-width="2" stroke-linecap="round"/><path d="M8 34 q3.75-2.5 7.5 0 t7.5 0 t7.5 0 t7.5 0" stroke="#1C5C8C" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`;
 
@@ -22,8 +22,10 @@ function signInView(msg = "") {
       <p class="err" role="alert" ${msg ? "" : "hidden"}>${esc(msg)}</p>
       <button class="btn">Email me a link</button>
       <p class="note">We'll only email you about your card. We never share your details.</p>
+      <button type="button" class="linkish" id="sample" style="justify-self:start">Or see a sample card first</button>
     </form>
   </div>`;
+  $("#sample").addEventListener("click", showSample);
   $("#signin").addEventListener("submit", async e => {
     e.preventDefault();
     const f = e.target, err = f.querySelector(".err"), btn = f.querySelector("button"), { email } = readForm(f);
@@ -75,7 +77,8 @@ function cardView(c) {
       <div class="shimmer" aria-hidden="true"></div>
     </div>
     <p class="note" style="text-align:center">Show this screen at the till. The code changes every 30 seconds, so screenshots won't work.</p>
-    <div class="fcard-actions"><a class="btn" href="/deals.html">See member deals</a><button type="button" class="btn ghost" id="rename">Change name</button><button type="button" class="btn ghost" id="out">Sign out</button></div>
+    <div class="fcard-actions">${preview ? '<button type="button" class="btn" id="out">Get my own card</button><a class="btn ghost" href="/deals.html">See member deals</a>' : '<a class="btn" href="/deals.html">See member deals</a><button type="button" class="btn ghost" id="rename">Change name</button><button type="button" class="btn ghost" id="out">Sign out</button>'}</div>
+    <section class="panel savings" id="savings" aria-label="Your savings"><div class="lp-loading" style="padding:10px 0">Loading your savings…</div></section>
     <details class="panel tip"><summary>Tip: open your card in one tap</summary><p class="note">On iPhone, tap Share then "Add to Home Screen". On Android, tap the ⋮ menu then "Add to Home screen". Your card then opens like an app.</p></details>
   </div>`;
   let lastOk = Date.now();
@@ -89,15 +92,94 @@ function cardView(c) {
     $("#fresh").textContent = stale ? "Offline: reconnect to refresh" : "Live code";
     $(".fcard").classList.toggle("stale", stale);
   }, 1000);
-  $("#out").addEventListener("click", async () => { if (DEMO) return; await client.auth.signOut(); clearInterval(timer); signInView(); });
-  $("#rename").addEventListener("click", () => { if (DEMO) return; clearInterval(timer); nameView(true, c.first_name); });
-  if (DEMO) return;
+  $("#out").addEventListener("click", async () => {
+    if (preview) { preview = false; clearInterval(clock); return DEMO ? null : signInView(); }
+    if (DEMO) return; await client.auth.signOut(); clearInterval(timer); signInView();
+  });
+  $("#rename")?.addEventListener("click", () => { if (DEMO) return; clearInterval(timer); nameView(true, c.first_name); });
+  initSavings();
+  if (DEMO || preview) return;
   timer = setInterval(async () => {
     if (document.hidden) return;
     const { data } = await client.rpc("my_card");
     if (data?.token) draw(data.token);
   }, 20000);
   document.addEventListener("visibilitychange", async () => { if (!document.hidden) { const { data } = await client.rpc("my_card"); if (data?.token) draw(data.token); } });
+}
+
+/* ---------- sample card (no account needed) ---------- */
+function showSample() {
+  preview = true;
+  const w = Math.floor(Date.now() / 30000);
+  cardView({ first_name: "Sam", since: new Date(Date.now() - 40 * 86400000).toISOString(), token: `sample.${w}.sample` });
+  app.insertAdjacentHTML("afterbegin", '<div class="sample-bar"><b>Sample card</b> This is what your card and savings tracker look like. Try adding a saving: nothing is saved.</div>');
+  scrollTo(0, 0);
+}
+
+/* ---------- savings tracker ---------- */
+const ago = n => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
+const SAMPLE_SAVINGS = [
+  { id: "s1", label: "Soft play: 10% off weekday entry", amount: 1.20, saved_on: ago(2) },
+  { id: "s2", label: "Art club: first class free", amount: 8.00, saved_on: ago(9) },
+  { id: "s3", label: "Swim school: sibling half price", amount: 27.50, saved_on: ago(21) },
+  { id: "s4", label: "Party: £20 off weekend party", amount: 20.00, saved_on: ago(34) },
+];
+let savings = [], dealOpts = [];
+const money = n => "£" + Number(n).toFixed(2).replace(/\.00$/, "");
+
+async function initSavings() {
+  try { dealOpts = await fetchDeals(); } catch { dealOpts = []; }
+  if (preview || DEMO) savings = structuredClone(SAMPLE_SAVINGS);
+  else {
+    const { data, error } = await client.from("member_savings").select("*").order("saved_on", { ascending: false }).order("created_at", { ascending: false });
+    if (error) { $("#savings").innerHTML = '<p class="note">Your savings tracker is taking a moment to load. Please refresh.</p>'; return; }
+    savings = data;
+  }
+  renderSavings();
+}
+
+function renderSavings() {
+  const box = $("#savings"); if (!box) return;
+  const total = savings.reduce((t, x) => t + Number(x.amount), 0);
+  const now = new Date(), monthKey = now.toISOString().slice(0, 7);
+  const month = savings.filter(x => x.saved_on.startsWith(monthKey)).reduce((t, x) => t + Number(x.amount), 0);
+  box.innerHTML = `
+    <div class="sv-top">
+      <div><span class="note">You've saved</span><b class="sv-total">${money(total)}</b><span class="note">${savings.length ? `using ${savings.length} deal${savings.length === 1 ? "" : "s"}` : "Add a saving each time you use a deal"}</span></div>
+      <div class="sv-month"><span class="note">This month</span><b>${money(month)}</b></div>
+    </div>
+    <form id="sv-form" class="sv-form" novalidate>
+      <label class="field">What did you use?<select name="deal">${dealOpts.map(d => `<option value="${esc(d.id)}">${esc(d.business_name)}: ${esc(d.offer)}</option>`).join("")}<option value="">Something else…</option></select></label>
+      <label class="field" id="sv-label-wrap" ${dealOpts.length ? "hidden" : ""}>Describe it<input name="label" maxlength="120" placeholder="e.g. Half-price soft play"></label>
+      <label class="field">Saved (£)<input name="amount" type="number" inputmode="decimal" min="0.01" max="1000" step="0.01" placeholder="5.00"></label>
+      <p class="err" role="alert" hidden></p>
+      <button class="btn">Add saving</button>
+    </form>
+    ${savings.length ? `<ul class="sv-list">${savings.map(x => `<li><span><b>${esc(x.label)}</b><span class="note">${new Date(x.saved_on).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span></span><span class="sv-amt">${money(x.amount)}</span><button type="button" class="sv-del" data-del="${esc(x.id)}" aria-label="Remove ${esc(x.label)}">✕</button></li>`).join("")}</ul>` : ""}`;
+  const f = $("#sv-form");
+  f.elements.deal.value = dealOpts.length ? String(dealOpts[0].id) : "";
+  f.elements.deal.addEventListener("change", () => { $("#sv-label-wrap").hidden = !!f.elements.deal.value; });
+  f.addEventListener("submit", addSaving);
+}
+$("#card-app").addEventListener("click", async e => {
+  const b = e.target.closest("[data-del]"); if (!b) return;
+  if (!(preview || DEMO)) { const { error } = await client.from("member_savings").delete().eq("id", b.dataset.del); if (error) return; }
+  savings = savings.filter(x => String(x.id) !== b.dataset.del); renderSavings();
+});
+async function addSaving(e) {
+  e.preventDefault();
+  const f = e.target, err = f.querySelector(".err"), d = readForm(f), deal = dealOpts.find(x => String(x.id) === d.deal);
+  const amount = Math.round(parseFloat(d.amount) * 100) / 100, label = deal ? `${deal.business_name}: ${deal.offer}` : d.label;
+  if (!label) { err.textContent = "Please describe what you saved on."; err.hidden = false; return; }
+  if (!(amount > 0 && amount <= 1000)) { err.textContent = "Please enter how much you saved, e.g. 4.50"; err.hidden = false; return; }
+  const row = { label: label.slice(0, 120), amount, deal_id: deal && !(preview || DEMO) ? deal.id : null };
+  if (preview || DEMO) savings.unshift({ ...row, id: "x" + Date.now(), saved_on: new Date().toISOString().slice(0, 10) });
+  else {
+    const { data, error } = await client.from("member_savings").insert(row).select().single();
+    if (error) { err.textContent = "Sorry, that didn't save. Please try again."; err.hidden = false; return; }
+    savings.unshift(data);
+  }
+  renderSavings();
 }
 
 async function loadCard() {
