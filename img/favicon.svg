@@ -1,1 +1,62 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 46 46"><rect width="46" height="46" rx="14" fill="#0F2A44"/><path d="M8 28 Q23 12 38 28" stroke="#BFEBD9" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M8 28 H38" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M14 28 V23 M23 28 V20 M32 28 V23" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 120 120">
+  <defs>
+    <style>
+      .st0 {
+        fill: #0f2a44;
+      }
+
+      .st1 {
+        fill: #ffe7ae;
+        stroke: #e0a83a;
+      }
+
+      .st1, .st2, .st3 {
+        stroke-width: 6px;
+      }
+
+      .st4 {
+        fill: #fff;
+      }
+
+      .st2 {
+        fill: #f9d3e0;
+        stroke: #d2557e;
+      }
+
+      .st5 {
+        fill: #1f9a7a;
+      }
+
+      .st6 {
+        fill: #c2703d;
+      }
+
+      .st3 {
+        fill: #dce5ff;
+        stroke: #4c6fd6;
+      }
+
+      .st7 {
+        fill: #7e5bc2;
+      }
+
+      .st8 {
+        fill: #3c8dad;
+      }
+    </style>
+  </defs>
+  <rect class="st0" width="120" height="120" rx="28" ry="28"/>
+  <rect class="st1" x="23" y="23" width="26" height="26" rx="8" ry="8"/>
+  <rect class="st0" x="31" y="31" width="10" height="10" rx="3" ry="3"/>
+  <rect class="st3" x="71" y="23" width="26" height="26" rx="8" ry="8"/>
+  <rect class="st0" x="79" y="31" width="10" height="10" rx="3" ry="3"/>
+  <rect class="st2" x="23" y="71" width="26" height="26" rx="8" ry="8"/>
+  <rect class="st0" x="31" y="79" width="10" height="10" rx="3" ry="3"/>
+  <circle class="st5" cx="78" cy="78" r="4.2"/>
+  <circle class="st7" cx="94" cy="78" r="4.2"/>
+  <circle class="st0" cx="86" cy="86" r="4.2"/>
+  <circle class="st8" cx="78" cy="94" r="4.2"/>
+  <circle class="st6" cx="94" cy="94" r="4.2"/>
+  <rect class="st4" x="56.33" y="20.91" width="7.4" height="80" rx="2.9" ry="2.9"/>
+  <rect class="st4" x="56.33" y="19.91" width="7.4" height="80" rx="2.9" ry="2.9" transform="translate(119.94 -.13) rotate(90)"/>
+</svg>

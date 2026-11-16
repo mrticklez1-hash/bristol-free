@@ -5,7 +5,7 @@ initHeader();
 const app = $("#card-app");
 let client = null, timer = null, clock = null, preview = false;
 
-const LOGO = `<svg width="40" height="40" viewBox="0 0 46 46" aria-hidden="true"><rect width="46" height="46" rx="14" fill="#fff"/><path d="M8 28 Q23 12 38 28" stroke="#1C5C8C" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M8 28 H38" stroke="#0F2A44" stroke-width="2.6" stroke-linecap="round"/><path d="M14 28 V23 M23 28 V20 M32 28 V23" stroke="#0F2A44" stroke-width="2" stroke-linecap="round"/><path d="M8 34 q3.75-2.5 7.5 0 t7.5 0 t7.5 0 t7.5 0" stroke="#1C5C8C" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`;
+const LOGO = `<img src="/img/logo-mark.svg" width="40" height="40" alt="" style="border-radius:11px;box-shadow:0 0 0 2px rgba(255,255,255,.55)">`;
 
 function signInView(msg = "") {
   app.innerHTML = `<div class="card-intro">
