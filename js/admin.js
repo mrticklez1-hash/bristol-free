@@ -182,7 +182,7 @@ async function openEditor(l) {
   $("#e-title").textContent = l ? `Edit ${l.name}` : "Add a listing";
   $("#e-del").hidden = !l;
   const v = l || { category: "outdoors", area: AREAS[0], price_band: 0, ages: [], status: "published" };
-  for (const k of ["name", "description", "address", "postcode", "website", "phone", "opening_hours", "image_url"]) f.elements[k].value = v[k] || "";
+  for (const k of ["name", "description", "address", "postcode", "website", "phone", "opening_hours", "image_url", "photo_credit"]) f.elements[k].value = v[k] || "";
   f.elements.category.value = v.category; f.elements.area.value = v.area; f.elements.price_band.value = String(v.price_band ?? 0);
   f.querySelectorAll("input[name=ages]").forEach(c => c.checked = (v.ages || []).includes(c.value));
   f.elements.published.checked = v.status !== "draft"; f.elements.claimed.checked = !!v.claimed; f.elements.featured.checked = !!v.featured;
@@ -235,7 +235,7 @@ $("#eform").addEventListener("submit", async e => {
       address: d.address || null, postcode: d.postcode ? d.postcode.toUpperCase() : null,
       website: d.website || null, phone: d.phone || null, opening_hours: d.opening_hours || null,
       price_band: +d.price_band, ages: [...f.querySelectorAll("input[name=ages]:checked")].map(c => c.value),
-      image_url, lat: ll ? +ll.lat.toFixed(6) : null, lng: ll ? +ll.lng.toFixed(6) : null,
+      image_url, photo_credit: d.photo_credit || null, lat: ll ? +ll.lat.toFixed(6) : null, lng: ll ? +ll.lng.toFixed(6) : null,
       status: f.elements.published.checked ? "published" : "draft",
       claimed: f.elements.claimed.checked, featured: f.elements.featured.checked,
     };

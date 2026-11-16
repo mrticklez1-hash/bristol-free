@@ -65,6 +65,7 @@ export function openListing(l, { onClaim } = {}) {
         ${web ? `<a class="btn" href="${esc(web)}" target="_blank" rel="noopener">Visit website</a>` : ""}
         ${dir ? `<a class="btn ghost" href="${dir}" target="_blank" rel="noopener">Open in map</a>` : ""}
       </div>
+      ${l.photo_credit ? `<p class="note">${esc(l.photo_credit)}</p>` : ""}
       ${l.claimed ? "" : claimBlock(l)}
     </div>`;
   const m = $("#modal");
