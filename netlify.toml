@@ -6,6 +6,16 @@
   to = "/listing.html"
   status = 200
 
+[[redirects]]
+  from = "/recipe/*"
+  to = "/recipe.html"
+  status = 200
+
+[[redirects]]
+  from = "/v"
+  to = "/verify.html"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
@@ -17,3 +27,9 @@
   for = "/admin.html"
   [headers.values]
     X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/verify.html"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+    Cache-Control = "no-store"

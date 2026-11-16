@@ -1,5 +1,5 @@
-import { fetchListings, AREAS, CATS } from "./data.js";
-import { $, card, initHeader, openListing, wireModal, esc } from "./ui.js";
+import { fetchListings, fetchEvents, fetchDeals, fetchRecipes, occurrences, AREAS, CATS, PRICE, listingUrl } from "./data.js";
+import { $, card, initHeader, openListing, wireModal, esc, dealCard, recipeCard } from "./ui.js";
 import { handleClaim } from "./claim.js";
 
 initHeader();
@@ -30,3 +30,24 @@ document.addEventListener("click", e => {
   const l = all.find(x => String(x.id) === b.dataset.id);
   if (l) openListing(l, { onClaim: handleClaim });
 });
+
+// What's on, deals and recipes strips (each fails quietly on its own)
+const today = new Date(); today.setHours(0, 0, 0, 0);
+fetchEvents().then(ev => {
+  const week = new Date(today.getTime() + 8 * 86400000);
+  const list = occurrences(ev, new Date(), week).slice(0, 4);
+  $("#h-events").innerHTML = list.length ? `<div class="ev-strip">${list.map(o => `<a class="ev mini" href="/whats-on.html">
+    <div class="ev-date" aria-hidden="true"><b>${o.at.getDate()}</b><span>${o.at.toLocaleDateString("en-GB", { month: "short" })}</span></div>
+    <div class="ev-body"><h3>${esc(o.title)}</h3><span class="sub">${o.at.toLocaleDateString("en-GB", { weekday: "short" })} ${o.at.getHours() % 12 || 12}${o.at.getMinutes() ? ":" + String(o.at.getMinutes()).padStart(2, "0") : ""}${o.at.getHours() < 12 ? "am" : "pm"} · ${esc(o.area)}</span>
+    ${o.price_band === 0 ? '<span class="tagpill free">Free</span>' : `<span class="tagpill">${esc(o.price_note || PRICE[o.price_band])}</span>`}</div></a>`).join("")}</div>`
+    : '<div class="empty">New events are added every week. <a href="/whats-on.html">See the calendar</a>.</div>';
+}).catch(() => $("#h-events").closest("section").remove());
+fetchDeals().then(d => {
+  if (!d.length) return $("#h-deals").closest("section").remove();
+  $("#h-deals").innerHTML = d.slice(0, 3).map(dealCard).join("");
+  $("#h-deals").addEventListener("click", () => location.href = "/deals.html");
+}).catch(() => $("#h-deals").closest("section").remove());
+fetchRecipes().then(r => {
+  if (!r.length) return $("#h-recipes").closest("section").remove();
+  $("#h-recipes").innerHTML = r.slice(0, 4).map(recipeCard).join("");
+}).catch(() => $("#h-recipes").closest("section").remove());

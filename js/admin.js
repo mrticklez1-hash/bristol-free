@@ -80,6 +80,8 @@ async function showApp() {
   $("#app").hidden = false;
   try { await loadAll(); } catch { $("#alist").innerHTML = '<div class="empty">Couldn\'t load listings. Check the Supabase details in js/config.js.</div>'; return; }
   renderListings(); renderRequests();
+  window.__admin = { client, listings };
+  window.dispatchEvent(new CustomEvent("admin-ready", { detail: window.__admin }));
 }
 let statusFilter = "";
 function renderListings() {
@@ -151,13 +153,12 @@ $("#rlist").addEventListener("click", async e => {
   if (!DEMO) { const { error } = await client.from("claim_requests").update({ status: "done" }).eq("id", r.id); if (error) return alert("Couldn't update that request."); }
   r.status = "done"; renderRequests();
 });
-const tab = which => {
-  $("#tab-l").setAttribute("aria-pressed", String(which === "l")); $("#tab-l").setAttribute("aria-selected", String(which === "l"));
-  $("#tab-r").setAttribute("aria-pressed", String(which === "r")); $("#tab-r").setAttribute("aria-selected", String(which === "r"));
-  $("#pane-l").hidden = which !== "l"; $("#pane-r").hidden = which !== "r";
-};
-$("#tab-l").addEventListener("click", () => tab("l"));
-$("#tab-r").addEventListener("click", () => tab("r"));
+// tabs
+$("#tabs").addEventListener("click", e => {
+  const b = e.target.closest("[data-tab]"); if (!b) return;
+  $("#tabs").querySelectorAll("[data-tab]").forEach(x => { const on = x === b; x.setAttribute("aria-selected", String(on)); x.classList.toggle("on", on); document.getElementById("pane-" + x.dataset.tab).hidden = !on; });
+});
+$("#tabs [data-tab=l]").classList.add("on");
 
 /* ---------- editor ---------- */
 $("#e-cat").innerHTML = Object.entries(CATS).map(([k, c]) => `<option value="${k}">${esc(c.n)}</option>`).join("");

@@ -24,6 +24,10 @@
     <button class="burger" aria-label="Menu" aria-expanded="false" aria-controls="links"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="#0F2A44" stroke-width="2" stroke-linecap="round"/></svg></button>
     <nav class="links" id="links" aria-label="Main">
       <a href="/directory.html">Things to do</a>
+      <a href="/whats-on.html">What's on</a>
+      <a href="/deals.html">Deals</a>
+      <a href="/recipes.html">Recipes</a>
+      <a href="/card.html" class="cardlink">My card</a>
       <a href="/business.html" class="cta">For businesses</a>
     </nav>
   </div>
@@ -44,11 +48,16 @@
 
   <section id="app" hidden>
     <div class="dir-tools" style="margin-top:0">
-      <div class="toggle" role="tablist" aria-label="Admin sections">
-        <button type="button" role="tab" id="tab-l" aria-pressed="true" aria-selected="true">Listings</button>
-        <button type="button" role="tab" id="tab-r" aria-pressed="false" aria-selected="false">Requests <span id="rcount"></span></button>
+      <div class="adm-tabs" role="tablist" aria-label="Admin sections" id="tabs">
+        <button type="button" role="tab" data-tab="l" aria-selected="true">Listings</button>
+        <button type="button" role="tab" data-tab="e" aria-selected="false">What's on</button>
+        <button type="button" role="tab" data-tab="d" aria-selected="false">Deals</button>
+        <button type="button" role="tab" data-tab="c" aria-selected="false">Recipes</button>
+        <button type="button" role="tab" data-tab="s" aria-selected="false">Suggestions <span id="scount"></span></button>
+        <button type="button" role="tab" data-tab="r" aria-selected="false">Claims <span id="rcount"></span></button>
+        <button type="button" role="tab" data-tab="m" aria-selected="false">Members <span id="mcount"></span></button>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="add">Add listing</button><button class="btn ghost" id="logout">Sign out</button></div>
+      <button class="btn ghost" id="logout">Sign out</button>
     </div>
 
     <div id="pane-l">
@@ -60,13 +69,24 @@
           <button type="button" class="chip" data-s="published" aria-pressed="false">Published</button>
         </div>
         <button type="button" class="btn ghost" id="pins">Place missing map pins</button>
+        <button class="btn" id="add">Add listing</button>
       </div>
       <p class="note" id="pins-msg" role="status" style="margin-bottom:10px"></p>
       <div id="alist" class="adm-list"></div>
     </div>
     <div id="pane-r" hidden><div id="rlist" class="adm-list"></div></div>
+    <div id="pane-e" hidden><div class="dir-tools" style="margin-top:0"><p class="note">Weekly events only need adding once: set "Repeats weekly until".</p><button class="btn" data-new="events">Add event</button></div><div id="list-events" class="adm-list"></div></div>
+    <div id="pane-d" hidden><div class="dir-tools" style="margin-top:0"><p class="note">Deals past their end date disappear from the site automatically.</p><button class="btn" data-new="deals">Add deal</button></div><div id="list-deals" class="adm-list"></div></div>
+    <div id="pane-c" hidden><div class="dir-tools" style="margin-top:0"><p class="note">One ingredient or step per line.</p><button class="btn" data-new="recipes">Add recipe</button></div><div id="list-recipes" class="adm-list"></div></div>
+    <div id="pane-s" hidden><p class="note" style="margin-bottom:10px">Events and deals sent in by the public. Nothing here is on the site until you add it.</p><div id="list-sugg" class="adm-list"></div></div>
+    <div id="pane-m" hidden><p class="note" style="margin-bottom:10px">Families with a free card. Pausing a card makes it show "paused" when a business scans it.</p><div id="list-members" class="adm-list"></div></div>
   </section>
 </div>
+
+<div class="modal" id="cmodal"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="c-title" style="max-width:720px">
+  <button class="x" id="cx" aria-label="Close">✕</button>
+  <form class="in" id="cform" novalidate></form>
+</div></div>
 
 <div class="modal" id="emodal"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="e-title" style="max-width:760px">
   <button class="x" id="ex" aria-label="Close">✕</button>
@@ -117,9 +137,10 @@
 </main>
 <footer class="site"><div class="wrap foot">
   <span>Bristol Free &amp; Affordable · made by local parents, for local parents</span>
-  <nav aria-label="Footer"><a href="/directory.html">Things to do</a><a href="/business.html">For businesses</a><a href="/admin.html">Admin</a></nav>
+  <nav aria-label="Footer"><a href="/directory.html">Things to do</a><a href="/whats-on.html">What's on</a><a href="/deals.html">Deals</a><a href="/recipes.html">Recipes</a><a href="/card.html">My card</a><a href="/business.html">For businesses</a><a href="/admin.html">Admin</a></nav>
 </div></footer>
 <div class="modal" id="modal"><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="m-title"></div></div>
 <script type="module" src="/js/admin.js"></script>
+<script type="module" src="/js/admin-content.js"></script>
 </body>
 </html>

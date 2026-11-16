@@ -33,19 +33,29 @@ Every change pushed to GitHub goes live automatically.
 
 Repeat for anyone else who should manage listings.
 
-## 4. Turn off public sign-ups
-Supabase → **Authentication → Sign In / Providers**: in the **User Signups** section at the top, turn off **Allow new users to sign up**. Leave **Enable email provider** ON, or you won't be able to sign in. Admins are added by you only.
+## 4. Sign-ups and the family card
+Families sign in to **My card** with an email link, so sign-ups need to be **on**. Being signed in gives them nothing except their own card: admin access only comes from the `admins` table.
+
+1. Run `supabase/update-05-whats-on-deals-recipes-card.sql` in the SQL Editor.
+2. Supabase → **Authentication → Sign In / Providers**: turn **Allow new users to sign up** ON. Leave **Enable email provider** ON. Turn **Confirm email** ON.
+3. Supabase → **Authentication → URL Configuration**: set **Site URL** to your site address (e.g. `https://bristolfree.netlify.app`) and add `https://bristolfree.netlify.app/card.html` under **Redirect URLs**.
+4. Supabase → **Authentication → Emails → SMTP Settings**: connect your own email sender (for example Resend or Brevo, both have free tiers). Supabase's built-in email only sends a handful of emails an hour, which is fine for testing but not for a launch post to the group.
+5. Optional: in **Emails → Templates → Magic link**, change the wording to something like "Here's your Bristol Free family card".
+
+Businesses check a card by scanning its QR code with their phone camera. It opens `/v` on your site and shows a green tick, an amber "expired" (usually a screenshot) or a red cross.
 
 ## Files
 | Path | What it is |
 | --- | --- |
-| `index.html`, `directory.html`, `business.html`, `admin.html` | The pages |
+| `index.html`, `directory.html`, `listing.html`, `whats-on.html`, `deals.html`, `recipes.html`, `recipe.html`, `card.html`, `verify.html`, `business.html`, `admin.html` | The pages |
 | `css/styles.css` | All styling |
 | `js/config.js` | Your Supabase details |
 | `js/data.js` | Loading listings, sending requests, categories and areas |
 | `js/ui.js`, `js/claim.js` | Cards, the listing pop-up and claim form |
 | `js/home.js`, `js/directory.js`, `js/business.js`, `js/admin.js` | Page logic |
-| `js/demo-data.js` | Sample listings for demo mode |
+| `js/whats-on.js`, `js/deals.js`, `js/recipes.js`, `js/recipe.js`, `js/card.js`, `js/verify.js`, `js/suggest.js`, `js/admin-content.js` | What's on, deals, recipes, the family card and their admin |
+| `js/vendor/qrcode.js` | QR code generator (MIT licence, Kazuhiko Arase) |
+| `js/demo-data.js`, `js/demo-extra.js` | Sample data for demo mode |
 | `supabase/schema.sql`, `supabase/seed.sql` | Database setup and sample data |
 
 ## Credits

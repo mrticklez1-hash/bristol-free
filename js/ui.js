@@ -135,3 +135,24 @@ export async function share(btn) {
   }
   setTimeout(() => { btn.textContent = label; }, 2000);
 }
+
+/* ---------- deals and recipes ---------- */
+export function dealCard(d) {
+  return `<button type="button" class="deal" data-deal="${esc(d.id)}">
+    <span class="deal-badge">${esc(d.badge)}</span>
+    <span class="deal-body"><b>${esc(d.offer)}</b><span class="sub">${esc(d.business_name)} · ${esc(d.area)}</span>
+    <span class="deal-tags">${d.members_only ? '<span class="badge">Show your card</span>' : '<span class="badge open">Open to everyone</span>'}${d.valid_until ? `<span class="note">Until ${new Date(d.valid_until).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>` : ""}</span></span>
+  </button>`;
+}
+
+const POT = "M4 10h16v3a7 7 0 0 1-7 7h-2a7 7 0 0 1-7-7z M2 10h20 M9 6c-1 1 1 2 0 3 M13 5c-1 1.2 1 2.2 0 3.4 M17 6c-1 1 1 2 0 3";
+export function recipeThumb(r, cls = "thumb") {
+  const img = r.image_url ? `<img src="${esc(r.image_url)}" alt="" loading="lazy">` :
+    `<svg class="scene" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="160" height="100" fill="#FFE2D1"/><circle cx="128" cy="40" r="9" fill="#fff" fill-opacity=".85"/><path d="M0 66 Q40 48 82 64 T160 56 V100 H0 Z" fill="#D9774A" fill-opacity=".28"/><path d="M0 82 Q58 68 108 81 T160 77 V100 H0 Z" fill="#fff" fill-opacity=".75"/><g transform="translate(58 20) scale(1.8)"><path d="${POT}" fill="none" stroke="#0F2A44" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></g></svg>`;
+  const cost = r.cost_per_serving != null ? `<span class="tagpill free">£${Number(r.cost_per_serving).toFixed(2)} a portion</span>` : "";
+  return `<div class="${cls}" style="background:#FFE2D1">${img}${cost}</div>`;
+}
+export const recipeTime = r => { const t = (r.prep_mins || 0) + (r.cook_mins || 0); return t ? `${t} mins` : ""; };
+export function recipeCard(r) {
+  return `<a class="card" href="/recipe/${encodeURIComponent(r.slug)}">${recipeThumb(r)}<div class="body"><h3>${esc(r.title)}</h3><span class="sub">${[recipeTime(r), r.serves ? `Serves ${r.serves}` : ""].filter(Boolean).join(" · ")}</span></div></a>`;
+}

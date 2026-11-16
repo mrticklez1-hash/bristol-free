@@ -1,5 +1,6 @@
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./config.js";
 import { DEMO_LISTINGS } from "./demo-data.js";
+import { DEMO_EVENTS, DEMO_DEALS, DEMO_RECIPES } from "./demo-extra.js";
 
 export const DEMO = !SUPABASE_URL || !SUPABASE_ANON_KEY;
 
@@ -60,4 +61,71 @@ export async function fetchListing(slug) {
   const { data, error } = await c.from("listings").select("*").eq("slug", slug).eq("status", "published").maybeSingle();
   if (error) throw error;
   return data;
+}
+
+/* ---------- What's on, deals, recipes, suggestions ---------- */
+
+export async function fetchEvents() {
+  if (DEMO) return DEMO_EVENTS;
+  const c = await sb();
+  const since = new Date(Date.now() - 86400000).toISOString();
+  const { data, error } = await c.from("events")
+    .select("*, listing:listings(name, slug, area)")
+    .eq("status", "published")
+    .or(`starts_at.gte.${since},repeat_until.gte.${since.slice(0, 10)}`)
+    .order("starts_at");
+  if (error) throw error;
+  return data;
+}
+
+// Weekly events are stored once; this spreads them into dated occurrences between from and to.
+export function occurrences(events, from, to) {
+  const out = [];
+  for (const e of events) {
+    const start = new Date(e.starts_at), len = e.ends_at ? new Date(e.ends_at) - start : 0;
+    const last = e.repeat_until ? new Date(e.repeat_until + "T23:59:59") : start;
+    for (let d = new Date(start); d <= last && d <= to; d.setDate(d.getDate() + 7)) {
+      const end = len ? new Date(d.getTime() + len) : null;
+      if ((end || d) >= from) out.push({ ...e, at: new Date(d), end });
+      if (!e.repeat_until) break;
+    }
+  }
+  return out.sort((a, b) => a.at - b.at);
+}
+
+export async function fetchDeals() {
+  if (DEMO) return DEMO_DEALS;
+  const c = await sb();
+  const today = new Date().toISOString().slice(0, 10);
+  const { data, error } = await c.from("deals")
+    .select("*, listing:listings(name, slug, area)")
+    .eq("status", "published")
+    .or(`valid_until.is.null,valid_until.gte.${today}`)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchRecipes() {
+  if (DEMO) return DEMO_RECIPES;
+  const c = await sb();
+  const { data, error } = await c.from("recipes").select("*").eq("status", "published").order("created_at", { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchRecipe(slug) {
+  if (DEMO) return DEMO_RECIPES.find(r => r.slug === slug) || null;
+  const c = await sb();
+  const { data, error } = await c.from("recipes").select("*").eq("slug", slug).eq("status", "published").maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function submitSuggestion(kind, data, contact_name, email) {
+  if (DEMO) { await new Promise(r => setTimeout(r, 400)); return { demo: true }; }
+  const c = await sb();
+  const { error } = await c.from("suggestions").insert({ kind, data, contact_name, email });
+  if (error) throw error;
+  return {};
 }
