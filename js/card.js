@@ -103,7 +103,8 @@ function cardView(c) {
     if (document.hidden) return;
     const { data } = await client.rpc("my_card");
     if (data?.token) draw(data.token);
-  }, 20000);
+    refreshSavings();
+  }, 15000);
   document.addEventListener("visibilitychange", async () => { if (!document.hidden) { const { data } = await client.rpc("my_card"); if (data?.token) draw(data.token); } });
 }
 
@@ -138,6 +139,18 @@ async function initSavings() {
   renderSavings();
 }
 
+// Picks up savings that staff record when they scan this card
+async function refreshSavings() {
+  if (preview || DEMO || !client) return;
+  const { data } = await client.from("member_savings").select("*").order("saved_on", { ascending: false }).order("created_at", { ascending: false });
+  if (!data || data.length === savings.length) return;
+  const typing = $("#sv-form") && [...$("#sv-form").querySelectorAll("input")].some(i => i.value);
+  savings = data;
+  if (!typing) renderSavings();
+  const fresh = data[0];
+  if (fresh?.source === "scan") $("#savings")?.insertAdjacentHTML("afterbegin", `<div class="ok" role="status">Nice! ${money(fresh.amount)} saved at ${esc(fresh.label.split(":")[0])} has been added.</div>`);
+}
+
 function renderSavings() {
   const box = $("#savings"); if (!box) return;
   const total = savings.reduce((t, x) => t + Number(x.amount), 0);
@@ -155,7 +168,7 @@ function renderSavings() {
       <p class="err" role="alert" hidden></p>
       <button class="btn">Add saving</button>
     </form>
-    ${savings.length ? `<ul class="sv-list">${savings.map(x => `<li><span><b>${esc(x.label)}</b><span class="note">${new Date(x.saved_on).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span></span><span class="sv-amt">${money(x.amount)}</span><button type="button" class="sv-del" data-del="${esc(x.id)}" aria-label="Remove ${esc(x.label)}">✕</button></li>`).join("")}</ul>` : ""}`;
+    ${savings.length ? `<ul class="sv-list">${savings.map(x => `<li><span><b>${esc(x.label)}</b><span class="note">${new Date(x.saved_on).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}${x.source === "scan" ? ' · <span class="scanned">Recorded at the till</span>' : ""}</span></span><span class="sv-amt">${money(x.amount)}</span><button type="button" class="sv-del" data-del="${esc(x.id)}" aria-label="Remove ${esc(x.label)}">✕</button></li>`).join("")}</ul>` : ""}`;
   const f = $("#sv-form");
   f.elements.deal.value = dealOpts.length ? String(dealOpts[0].id) : "";
   f.elements.deal.addEventListener("change", () => { $("#sv-label-wrap").hidden = !!f.elements.deal.value; });

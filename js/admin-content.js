@@ -3,7 +3,7 @@ import { DEMO, AREAS, PRICE } from "./data.js";
 import { DEMO_EVENTS, DEMO_DEALS, DEMO_RECIPES } from "./demo-extra.js";
 import { $, esc } from "./ui.js";
 
-let client = null, listings = [];
+let client = null, listings = [], usage = {}, keys = [];
 const store = { events: [], deals: [], recipes: [], suggestions: [], members: [] };
 const demo = {
   events: structuredClone(DEMO_EVENTS).map(x => ({ ...x, status: "published" })),
@@ -64,16 +64,43 @@ const TYPES = {
       <div class="claim-two"><label class="field">Linked listing (optional)<select name="listing_id">${listingOptions()}</select></label><label class="field">Area<select name="area">${areaOptions()}</select></label></div>
       <label class="field">Business name<input name="business_name" required maxlength="200"></label>
       <div class="claim-two"><label class="field">Big badge (up to 8 characters)<input name="badge" required maxlength="8" placeholder="10%, FREE, £20"></label><label class="field">Offer<input name="offer" required maxlength="120" placeholder="10% off weekday entry"></label></div>
+      <fieldset class="field kindset"><legend>How is the saving worked out when staff scan a card?</legend>
+        <label class="check"><input type="radio" name="kind" value="fixed" checked> A fixed amount (e.g. £20 off, or a free class worth £8)</label>
+        <label class="check"><input type="radio" name="kind" value="percent_item"> A percentage off something with a set price (e.g. 10% off £12 entry)</label>
+        <label class="check"><input type="radio" name="kind" value="percent_bill"> A percentage off the bill (staff type the bill total)</label>
+        <div class="claim-two">
+          <label class="field"><span id="value-label">Amount saved (£)</span><input name="value" type="number" step="0.01" min="0.01"></label>
+          <label class="field" id="item-wrap" hidden>Set price (£)<input name="item_price" type="number" step="0.01" min="0.01"></label>
+        </div>
+        <p class="note" id="saves-note"></p>
+      </fieldset>
       <label class="field">Details and conditions<textarea name="details" rows="3" maxlength="1000" placeholder="e.g. Term time only. One per family per visit."></textarea></label>
       <div class="claim-two"><label class="field">Ends on (optional)<input name="valid_until" type="date"></label><label class="field">Website<input name="website" maxlength="300" placeholder="https://…"></label></div>
       <label class="check"><input type="checkbox" name="members_only" checked> Members only: show the family card to claim</label>`,
-    fill: (f, v) => { set(f, { listing_id: v.listing_id || "", area: v.area || AREAS[0], business_name: v.business_name || v.business, badge: v.badge, offer: v.offer, details: v.details, valid_until: v.valid_until || "", website: v.website }); f.elements.members_only.checked = v.members_only !== false; },
+    fill: (f, v) => {
+      set(f, { listing_id: v.listing_id || "", area: v.area || AREAS[0], business_name: v.business_name || v.business, badge: v.badge, offer: v.offer, details: v.details, valid_until: v.valid_until || "", website: v.website, value: v.value ?? "", item_price: v.item_price ?? "" });
+      f.elements.members_only.checked = v.members_only !== false;
+      const k = v.kind || "fixed"; f.querySelectorAll("input[name=kind]").forEach(r => r.checked = r.value === k);
+      const upd = () => {
+        const kind = f.querySelector("input[name=kind]:checked").value, val = parseFloat(f.elements.value.value), price = parseFloat(f.elements.item_price.value);
+        $("#value-label").textContent = kind === "fixed" ? "Amount saved (£)" : "Percentage off (%)";
+        $("#item-wrap").hidden = kind !== "percent_item";
+        $("#saves-note").textContent = kind === "fixed" && val > 0 ? `Each scan records £${val.toFixed(2)} saved.`
+          : kind === "percent_item" && val > 0 && price > 0 ? `Each scan records £${(Math.round(price * val) / 100).toFixed(2)} saved.`
+          : kind === "percent_bill" && val > 0 ? `Staff type the bill; a £20 bill records £${(Math.round(20 * val) / 100).toFixed(2)} saved.` : "";
+      };
+      f.querySelector(".kindset").addEventListener("input", upd); upd();
+    },
     read: (f, d) => {
       if (!d.business_name) return "Please add the business name.";
       if (!d.badge || !d.offer) return "Please add the badge and the offer.";
-      return { listing_id: d.listing_id || null, area: d.area, business_name: d.business_name, badge: d.badge.toUpperCase(), offer: d.offer, details: d.details || null, valid_until: d.valid_until || null, website: fixUrl(d.website), members_only: f.elements.members_only.checked };
+      const kind = f.querySelector("input[name=kind]:checked").value, value = parseFloat(d.value), item = parseFloat(d.item_price);
+      if (!(value > 0)) return kind === "fixed" ? "Please add the amount saved, in pounds." : "Please add the percentage off.";
+      if (kind !== "fixed" && value > 100) return "The percentage can't be more than 100.";
+      if (kind === "percent_item" && !(item > 0)) return "Please add the set price the percentage comes off.";
+      return { listing_id: d.listing_id || null, area: d.area, business_name: d.business_name, badge: d.badge.toUpperCase(), offer: d.offer, details: d.details || null, valid_until: d.valid_until || null, website: fixUrl(d.website), members_only: f.elements.members_only.checked, kind, value, item_price: kind === "percent_item" ? item : null };
     },
-    row: v => { const ended = v.valid_until && v.valid_until < localDate(new Date()); return { cls: ended ? "past" : "", title: `${v.badge} · ${v.offer}`, sub: `${v.business_name} · ${v.area}${v.valid_until ? ` · ends ${new Date(v.valid_until).toLocaleDateString("en-GB")}` : ""}`, badges: (ended ? '<span class="badge">Ended</span>' : "") + (v.members_only ? '<span class="badge">Card</span>' : '<span class="badge open">Everyone</span>') }; },
+    row: v => { const ended = v.valid_until && v.valid_until < localDate(new Date()), u = usage[v.id]; return { cls: ended ? "past" : "", title: `${v.badge} · ${v.offer}`, sub: `${v.business_name} · ${v.area}${v.valid_until ? ` · ends ${new Date(v.valid_until).toLocaleDateString("en-GB")}` : ""}${u ? ` · used ${u.n} time${u.n === 1 ? "" : "s"}, £${u.amt.toFixed(2)} saved` : ""}${!v.value ? " · no saving amount set yet" : ""}`, badges: (ended ? '<span class="badge">Ended</span>' : "") + (v.members_only ? '<span class="badge">Card</span>' : '<span class="badge open">Everyone</span>') }; },
     sort: (a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")),
   },
   recipes: {
@@ -129,6 +156,46 @@ async function uploadImage(file) {
   const { error } = await client.storage.from("listing-images").upload(path, file, { contentType: file.type, upsert: false });
   if (error) throw error;
   return client.storage.from("listing-images").getPublicUrl(path).data.publicUrl;
+}
+
+async function loadUsage() {
+  usage = {}; keys = [];
+  if (DEMO) return;
+  const [r, k] = await Promise.all([client.from("redemptions").select("deal_id, amount"), client.from("business_keys").select("id, business_name, created_at, last_used_at, revoked").order("created_at", { ascending: false })]);
+  for (const x of r.data || []) { const u = usage[x.deal_id] ||= { n: 0, amt: 0 }; u.n++; u.amt += Number(x.amount); }
+  keys = k.data || [];
+}
+function renderKeys() {
+  $("#list-keys").innerHTML = keys.length ? keys.map(k => `<div class="adm-row ${k.revoked ? "past" : ""}"><div class="grow"><b>${esc(k.business_name)}</b><span class="sub">Created ${new Date(k.created_at).toLocaleDateString("en-GB")} · ${k.last_used_at ? `last used ${new Date(k.last_used_at).toLocaleDateString("en-GB")}` : "not used yet"}</span></div>
+    ${k.revoked ? '<span class="badge">Switched off</span>' : `<button class="btn ghost" data-revoke="${esc(k.id)}">Switch off</button>`}</div>`).join("")
+    : '<div class="empty">No staff links yet.</div>';
+}
+$("#new-key").addEventListener("click", () => {
+  const f = $("#cform"); editing = null;
+  const names = [...new Set(store.deals.map(d => d.business_name))].sort();
+  f.innerHTML = `<h2 id="c-title">Create a staff link</h2>
+    <p class="note" style="font-size:15px">The link lets one business apply its own deals when it scans a family card. It works on any phone or tablet they open it on.</p>
+    <label class="field">Business (must match the business name on its deals)<input name="business" list="biz-names" required maxlength="200"><datalist id="biz-names">${names.map(n => `<option value="${esc(n)}">`).join("")}</datalist></label>
+    <p class="err" role="alert" hidden></p>
+    <div style="display:flex;gap:10px;justify-content:flex-end"><button type="button" class="btn ghost" id="c-cancel">Cancel</button><button class="btn" id="c-save">Create link</button></div>`;
+  $("#c-cancel").addEventListener("click", close);
+  $("#cmodal").classList.add("on"); f.elements.business.focus();
+});
+async function createKey(f) {
+  const name = f.elements.business.value.trim(); if (!name) return showErr("Please add the business name.");
+  const l = listings.find(x => x.name.toLowerCase() === name.toLowerCase());
+  let k;
+  if (DEMO) k = "demo-" + Math.random().toString(16).slice(2);
+  else { const { data, error } = await client.rpc("new_business_key", { p_business: name, p_listing: l?.id || null }); if (error) return showErr("Couldn't create the link. " + error.message); k = data; }
+  const link = `${location.origin}/staff.html?k=${k}`;
+  f.innerHTML = `<h2 id="c-title">Staff link for ${esc(name)}</h2>
+    <div class="ok">Send this to the business. It's only shown once, so copy it now.</div>
+    <label class="field">Their private link<input readonly value="${esc(link)}" id="key-link"></label>
+    <p class="note">Ask them to open it on their till phone or tablet. If it ever gets shared by mistake, switch it off here and make a new one.</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end"><button type="button" class="btn ghost" id="copy-key">Copy link</button><button type="button" class="btn" id="c-cancel">Done</button></div>`;
+  $("#copy-key").addEventListener("click", async () => { try { await navigator.clipboard.writeText(link); $("#copy-key").textContent = "Copied"; } catch { $("#key-link").select(); } });
+  $("#c-cancel").addEventListener("click", close);
+  await loadUsage(); renderKeys();
 }
 
 /* ---------- lists ---------- */
@@ -197,6 +264,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
 
 $("#cform").addEventListener("submit", async e => {
   e.preventDefault();
+  if (!editing) return createKey(e.target);
   const f = e.target, { table, item, fromSuggestion } = editing, T = TYPES[table], btn = $("#c-save");
   const d = Object.fromEntries([...new FormData(f).entries()].filter(([, v]) => typeof v === "string").map(([k, v]) => [k, v.trim()]));
   const row = T.read(f, d);
@@ -240,6 +308,12 @@ document.addEventListener("click", async e => {
     if (s.kind === "event" && d.weekly) showErr("They said this happens every week: set 'Repeats weekly until'.");
     return;
   }
+  const rv = e.target.closest("[data-revoke]");
+  if (rv) {
+    if (!confirm("Switch off this staff link? That business won't be able to apply deals until you send a new one.")) return;
+    if (!DEMO) { const { error } = await client.from("business_keys").update({ revoked: true }).eq("id", rv.dataset.revoke); if (error) return alert("Couldn't switch it off."); }
+    await loadUsage(); return renderKeys();
+  }
   const sd = e.target.closest("[data-sdone]"); if (sd) return markDone(sd.dataset.sdone).catch(() => alert("Couldn't update that suggestion."));
   const p = e.target.closest("[data-pause]"); if (p) return setMember(p.dataset.pause, "suspended");
   const up = e.target.closest("[data-unpause]"); if (up) return setMember(up.dataset.unpause, "active");
@@ -249,8 +323,8 @@ document.addEventListener("click", async e => {
 async function init(detail) {
   if (client !== null || (!DEMO && !detail.client)) return;
   client = detail.client || false; listings = detail.listings || [];
-  await Promise.all(["events", "deals", "recipes", "suggestions", "members"].map(load));
-  ["events", "deals", "recipes"].forEach(renderList); renderSugg(); renderMembers();
+  await Promise.all([...["events", "deals", "recipes", "suggestions", "members"].map(load), loadUsage()]);
+  ["events", "deals", "recipes"].forEach(renderList); renderSugg(); renderMembers(); renderKeys();
 }
 if (window.__admin) init(window.__admin);
 window.addEventListener("admin-ready", e => init(e.detail));

@@ -29,6 +29,13 @@
     X-Robots-Tag = "noindex"
 
 [[headers]]
+  for = "/staff.html"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+    Cache-Control = "no-store"
+    Referrer-Policy = "no-referrer"
+
+[[headers]]
   for = "/verify.html"
   [headers.values]
     X-Robots-Tag = "noindex"

@@ -13,11 +13,11 @@ export const DEMO_EVENTS = [
 ];
 
 export const DEMO_DEALS = [
-  { id: "d1", business_name: "Jumping Jellybeans", area: "East Bristol", badge: "10%", offer: "10% off weekday entry", details: "Monday to Friday, term time. One discount per family per visit.", members_only: true, valid_until: date(60) },
-  { id: "d2", business_name: "Little Picassos Art Club", area: "North Bristol", badge: "FREE", offer: "First class free", details: "Try any Saturday class for free before you book a term.", members_only: true },
-  { id: "d3", business_name: "Party Pandas", area: "South Bristol", badge: "£20", offer: "£20 off weekend parties", details: "Book any Saturday or Sunday party package.", members_only: true, valid_until: date(30) },
-  { id: "d4", business_name: "The Toy Barn", area: "Keynsham", badge: "15%", offer: "15% off wooden toys", details: "Excludes sale items. Online code: BRISTOLFREE.", members_only: false },
-  { id: "d5", business_name: "Seaside Swim School", area: "Clevedon", badge: "2 FOR 1", offer: "Sibling joins half price", details: "Second child's term at 50% off when siblings join together.", members_only: true },
+  { id: "d1", business_name: "Jumping Jellybeans", area: "East Bristol", badge: "10%", offer: "10% off weekday entry", kind: "percent_item", value: 10, item_price: 12, details: "Monday to Friday, term time. One discount per family per visit.", members_only: true, valid_until: date(60) },
+  { id: "d2", business_name: "Little Picassos Art Club", area: "North Bristol", badge: "FREE", offer: "First class free", kind: "fixed", value: 8, details: "Try any Saturday class for free before you book a term.", members_only: true },
+  { id: "d3", business_name: "Party Pandas", area: "South Bristol", badge: "£20", offer: "£20 off weekend parties", kind: "fixed", value: 20, details: "Book any Saturday or Sunday party package.", members_only: true, valid_until: date(30) },
+  { id: "d4", business_name: "The Toy Barn", area: "Keynsham", badge: "15%", offer: "15% off wooden toys", kind: "percent_bill", value: 15, details: "Excludes sale items. Online code: BRISTOLFREE.", members_only: false },
+  { id: "d5", business_name: "Seaside Swim School", area: "Clevedon", badge: "2 FOR 1", offer: "Sibling joins half price", kind: "fixed", value: 27.5, details: "Second child's term at 50% off when siblings join together.", members_only: true },
 ];
 
 export const DEMO_RECIPES = [
