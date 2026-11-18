@@ -406,3 +406,11 @@ details.dir[open] > summary::after { transform: translateY(1px) rotate(-135deg);
 /* inside the listing pop-up the menu opens in place, so it never gets clipped */
 #sheet details.dir[open] { flex-basis: 100%; }
 #sheet .dir-menu { position: static; margin-top: 8px; box-shadow: none; min-width: 0; }
+
+/* Near me */
+.tools-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.near { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; font-weight: 700; color: var(--navy); cursor: pointer; }
+.near[aria-pressed=true] { background: #2F6FED; border-color: #2F6FED; color: #fff; }
+.near:disabled { opacity: .7; cursor: progress; }
+.near-note { margin: -4px 0 12px; }
+.card .dist { display: block; margin-top: 4px; font-size: 13px; font-weight: 700; color: #2F6FED; }

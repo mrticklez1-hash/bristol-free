@@ -34,7 +34,12 @@ export function thumb(l) {
 
 export function card(l) {
   const c = CATS[l.category] || CATS.play;
-  return `<button class="card" data-id="${esc(l.id)}">${thumb(l)}<div class="body"><h3>${esc(l.name)}</h3><span class="sub">${esc(l.area)} · ${c.n}</span>${l.claimed ? "" : '<span class="unclaimed">Free listing · unclaimed</span>'}</div></button>`;
+  return `<button class="card" data-id="${esc(l.id)}">${thumb(l)}<div class="body"><h3>${esc(l.name)}</h3><span class="sub">${esc(l.area)} · ${c.n}</span>${typeof l._dist === "number" ? `<span class="dist">${distText(l._dist)}${!l.address && !l.postcode ? " · area they cover" : ""}</span>` : ""}${l.claimed ? "" : '<span class="unclaimed">Free listing · unclaimed</span>'}</div></button>`;
+}
+
+export function distText(mi) {
+  if (mi < 0.1) return "Under 0.1 miles away";
+  return `${mi < 10 ? mi.toFixed(1) : Math.round(mi)} miles away`;
 }
 
 export const ageText = a => (a || []).map(x => AGES[x] || x).join(", ");

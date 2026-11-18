@@ -16,6 +16,15 @@ let activeCat = CATS[params.get("cat")] ? params.get("cat") : "";
 
 /* ---------- map ---------- */
 let map = null, cluster = null, markers = new Map();
+let here = null, hereMarker = null; // "Near me": the parent's position, only kept in this page
+function miles(a, b) {
+  const r = Math.PI / 180, dLat = (b.lat - a.lat) * r, dLng = (b.lng - a.lng) * r;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) ** 2;
+  return 3958.8 * 2 * Math.asin(Math.sqrt(h));
+}
+function setDistances() {
+  all.forEach(l => { l._dist = here && typeof l.lat === "number" && typeof l.lng === "number" ? miles(here, l) : undefined; });
+}
 async function loadLeaflet() {
   if (window.L) return;
   await new Promise((res, rej) => { const s = document.createElement("script"); s.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"; s.integrity = "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="; s.crossOrigin = ""; s.onload = res; s.onerror = rej; document.head.append(s); });
@@ -50,7 +59,12 @@ function renderMap(list) {
     m.bindPopup(el);
     cluster.addLayer(m); markers.set(String(l.id), m); pts.push([l.lat, l.lng]);
   });
-  if (pts.length) map.fitBounds(pts, { padding: [30, 30], maxZoom: 14 });
+  if (hereMarker) { hereMarker.remove(); hereMarker = null; }
+  if (here) {
+    hereMarker = L.circleMarker([here.lat, here.lng], { radius: 9, color: "#fff", weight: 3, fillColor: "#2F6FED", fillOpacity: 1 }).addTo(map).bindTooltip("You are here");
+    const near = list.filter(l => typeof l._dist === "number").slice(0, 6).map(l => [l.lat, l.lng]);
+    map.fitBounds([[here.lat, here.lng], ...near], { padding: [40, 40], maxZoom: 14 });
+  } else if (pts.length) map.fitBounds(pts, { padding: [30, 30], maxZoom: 14 });
 }
 
 /* ---------- list + filters ---------- */
@@ -62,7 +76,9 @@ function filtered() {
     (!activeCat || l.category === activeCat) && (!a || l.area === a) && (p === "" || l.price_band === +p) &&
     (!g || (l.ages || []).includes(g)) &&
     (!q || `${l.name} ${l.description || ""} ${CATS[l.category]?.n || ""} ${l.area}`.toLowerCase().includes(q))
-  ).sort((x, y) => rank(y) - rank(x) || x.name.localeCompare(y.name));
+  ).sort(here
+    ? (x, y) => (x._dist ?? 1e9) - (y._dist ?? 1e9) || x.name.localeCompare(y.name)
+    : (x, y) => rank(y) - rank(x) || x.name.localeCompare(y.name));
 }
 function renderChips() {
   $("#chips").innerHTML = `<button type="button" class="chip${activeCat ? "" : " on"}" data-cat="" aria-pressed="${!activeCat}">All</button>` +
@@ -97,6 +113,26 @@ const setView = both => {
 };
 $("#v-both").addEventListener("click", () => setView(true));
 $("#v-list").addEventListener("click", () => setView(false));
+
+const nearBtn = $("#near"), nearNote = $("#near-note");
+function nearMsg(t) { nearNote.textContent = t; nearNote.hidden = !t; }
+nearBtn.addEventListener("click", () => {
+  if (here) { here = null; setDistances(); nearBtn.setAttribute("aria-pressed", "false"); nearMsg(""); render(); return; }
+  if (!navigator.geolocation) { nearMsg("Your browser can't share your location, so try the Where filter instead."); return; }
+  const done = () => { nearBtn.disabled = false; nearBtn.querySelector("span").textContent = "Near me"; };
+  nearBtn.disabled = true; nearBtn.querySelector("span").textContent = "Finding you…";
+  navigator.geolocation.getCurrentPosition(pos => {
+    done();
+    here = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    setDistances(); nearBtn.setAttribute("aria-pressed", "true");
+    const far = all.every(l => typeof l._dist !== "number" || l._dist > 40);
+    nearMsg(far ? "You seem to be a long way from Bristol, so distances may look large." : "Sorted by distance from you. Your location stays on your device and isn't saved.");
+    render();
+  }, err => {
+    done();
+    nearMsg(err.code === 1 ? "Location is turned off for this site. Allow it in your browser settings, or use the Where filter." : "We couldn't find your location just now. Please try again.");
+  }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 300000 });
+});
 
 renderChips();
 const [, data] = await Promise.all([initMap(), fetchListings().catch(() => null)]);
