@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Join the family card waiting list · Bristol Free & Affordable</title>
+<meta name="description" content="A free family card for Bristol parents: show it on your phone and save at local soft play, cafés, classes and more. Join the waiting list.">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css">
+<meta property="og:title" content="The Bristol family card is coming">
+<meta property="og:description" content="Save money at local places with one free card on your phone. Join the waiting list.">
+</head>
+<body class="t-butter">
+<a class="sr" href="#main">Skip to content</a>
+<header class="site">
+  <div class="wrap nav">
+    <a href="/" class="logo" aria-label="Bristol Free and Affordable, home">
+      <img src="/img/logo-mark.svg" width="46" height="46" alt="">
+      <span><b>Bristol Free</b><small>&amp; Affordable</small></span>
+    </a>
+    <button class="burger" aria-label="Menu" aria-expanded="false" aria-controls="links"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="#0F2A44" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <nav class="links" id="links" aria-label="Main">
+      <a href="/directory.html">Things to do</a>
+      <a href="/whats-on.html">What's on</a>
+      <a href="/deals.html">Deals</a>
+      <a href="/recipes.html">Recipes</a>
+      <a href="/card.html" class="cardlink">My card</a>
+      <a href="/business.html" class="cta">For businesses</a>
+    </nav>
+  </div>
+</header>
+<main id="main">
+<div class="wrap">
+  <div class="page-head"><h1>The Bristol family card is coming</h1><p>One free card on your phone that saves you money at local soft play, cafés, classes, swimming and more. Show it at the till and the saving is added up for you.</p></div>
+
+  <div class="int-grid">
+    <section class="panel int-example" aria-labelledby="ex-h">
+      <h2 id="ex-h">What a month could save you</h2>
+      <p class="note">An example for a family of four. Real deals depend on which places join.</p>
+      <ul class="int-saves">
+        <li><span>Soft play for 2 kids <small>£14 entry, 20% off</small></span><b>£2.80</b></li>
+        <li><span>Lunch at a family café <small>£24 bill, 10% off</small></span><b>£2.40</b></li>
+        <li><span>Two kids' swimming sessions <small>£1 off each</small></span><b>£2.00</b></li>
+        <li><span>A Saturday class <small>£7 session, 10% off</small></span><b>£0.70</b></li>
+      </ul>
+      <div class="int-total"><span>Each month</span><b>£7.90</b></div>
+      <div class="int-total big"><span>Over a year</span><b>about £95</b></div>
+      <p class="note">Your card keeps a running total of everything you've saved.</p>
+    </section>
+
+    <form class="claim int-form" id="int-form" novalidate>
+      <h2>Join the waiting list</h2>
+      <p class="note" style="margin-top:-4px">Be first to get your card when it launches. It takes 30 seconds.</p>
+      <input class="hp" name="website_hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="two"><label class="field">First name<input name="first_name" required maxlength="40" autocomplete="given-name"></label><label class="field">Email<input name="email" type="email" required maxlength="320" autocomplete="email"></label></div>
+      <fieldset class="field int-use"><legend>Would you use a free family card?</legend>
+        <label class="check"><input type="radio" name="would_use" value="yes" required> Yes, sign me up</label>
+        <label class="check"><input type="radio" name="would_use" value="maybe"> Maybe, tell me more</label>
+      </fieldset>
+      <label class="field">Which local places would you love a discount at? <span class="sub">(optional)</span><textarea name="places" rows="3" maxlength="500" placeholder="e.g. Wookey Hole, the soft play in Kingswood, our local café…"></textarea></label>
+      <label class="field">Where are you? <span class="sub">(optional)</span><select name="area"><option value="">Choose an area</option></select></label>
+      <label class="check"><input type="checkbox" name="consent" required> Email me when the card launches. Just launch news, no spam, and you can unsubscribe anytime.</label>
+      <p class="err" role="alert" hidden></p>
+      <button class="btn">Join the waiting list</button>
+      <p class="note">We only use your details for the family card. We never share or sell them.</p>
+    </form>
+  </div>
+</div>
+</main>
+<footer class="site"><div class="wrap foot">
+  <span>Bristol Free &amp; Affordable · made by local parents, for local parents</span>
+  <nav aria-label="Footer"><a href="/directory.html">Things to do</a><a href="/whats-on.html">What's on</a><a href="/deals.html">Deals</a><a href="/recipes.html">Recipes</a><a href="/card.html">My card</a><a href="/business.html">For businesses</a><a href="/admin.html">Admin</a></nav>
+</div></footer>
+<div class="modal" id="modal"><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="m-title"></div></div>
+<script type="module" src="/js/interest.js"></script>
+</body>
+</html>

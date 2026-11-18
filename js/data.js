@@ -122,6 +122,15 @@ export async function fetchRecipe(slug) {
   return data;
 }
 
+export async function submitInterest(row) {
+  if (DEMO) { await new Promise(r => setTimeout(r, 400)); return { demo: true }; }
+  const c = await sb();
+  const { error } = await c.from("interest").insert(row);
+  if (error?.code === "23505") return { already: true }; // that email is already on the list
+  if (error) throw error;
+  return {};
+}
+
 export async function submitSuggestion(kind, data, contact_name, email) {
   if (DEMO) { await new Promise(r => setTimeout(r, 400)); return { demo: true }; }
   const c = await sb();

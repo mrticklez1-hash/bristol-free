@@ -56,6 +56,7 @@
         <button type="button" role="tab" data-tab="s" aria-selected="false">Suggestions <span id="scount"></span></button>
         <button type="button" role="tab" data-tab="r" aria-selected="false">Claims <span id="rcount"></span></button>
         <button type="button" role="tab" data-tab="m" aria-selected="false">Members <span id="mcount"></span></button>
+        <button type="button" role="tab" data-tab="i" aria-selected="false">Waiting list <span id="icount"></span></button>
       </div>
       <button class="btn ghost" id="logout">Sign out</button>
     </div>
@@ -91,6 +92,11 @@
         <div id="list-invites" class="adm-list"></div>
       </div>
       <p class="note" style="margin:18px 0 10px">Families with a card. Pausing a card makes it show "paused" when a business scans it. "Make lifetime" gives that card a free lifetime upgrade.</p><div id="list-members" class="adm-list"></div></div>
+    <div id="pane-i" hidden>
+      <p class="note" style="margin-bottom:12px">People who joined the family card waiting list at <b>/join</b>. Share <b>/join?src=fb</b> in the group to see how many came from fb.</p>
+      <div id="int-summary"></div>
+      <div id="list-interest" class="adm-list"></div>
+    </div>
   </section>
 </div>
 
@@ -154,5 +160,6 @@
 <div class="modal" id="modal"><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="m-title"></div></div>
 <script type="module" src="/js/admin.js"></script>
 <script type="module" src="/js/admin-content.js"></script>
+<script type="module" src="/js/admin-interest.js"></script>
 </body>
 </html>
