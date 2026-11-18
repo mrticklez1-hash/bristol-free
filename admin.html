@@ -81,7 +81,16 @@
       <div id="list-keys" class="adm-list"></div></div>
     <div id="pane-c" hidden><div class="dir-tools" style="margin-top:0"><p class="note">One ingredient or step per line.</p><button class="btn" data-new="recipes">Add recipe</button></div><div id="list-recipes" class="adm-list"></div></div>
     <div id="pane-s" hidden><p class="note" style="margin-bottom:10px">Events and deals sent in by the public. Nothing here is on the site until you add it.</p><div id="list-sugg" class="adm-list"></div></div>
-    <div id="pane-m" hidden><p class="note" style="margin-bottom:10px">Families with a free card. Pausing a card makes it show "paused" when a business scans it.</p><div id="list-members" class="adm-list"></div></div>
+    <div id="pane-m" hidden>
+      <div class="panel invites" id="invites">
+        <h3>Lifetime card invite codes</h3>
+        <p class="note">Make a one-off code and send it to someone, e.g. a founding tester. They type it when they get their card (or later, on their card page) and it becomes a lifetime card. Each code works once.</p>
+        <form id="inv-form" class="invite-form" novalidate><label class="field">Who it's for <span class="sub">(only you see this)</span><input name="note" maxlength="200" placeholder="e.g. Founding tester: Jo from the group"></label><button class="btn">Make a code</button></form>
+        <p class="err" role="alert" hidden></p>
+        <div id="inv-new"></div>
+        <div id="list-invites" class="adm-list"></div>
+      </div>
+      <p class="note" style="margin:18px 0 10px">Families with a card. Pausing a card makes it show "paused" when a business scans it. "Make lifetime" gives that card a free lifetime upgrade.</p><div id="list-members" class="adm-list"></div></div>
   </section>
 </div>
 

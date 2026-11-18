@@ -46,6 +46,7 @@ function nameView(isChange = false, current = "") {
     <h2>${isChange ? "Change the name on your card" : "Nearly there!"}</h2>
     <p class="note" style="font-size:15px">${isChange ? "" : "What name should go on your card? "}Staff will see this when they check it, so use the name you'd give at the till.</p>
     <label class="field">First name<input name="first_name" required maxlength="40" autocomplete="given-name" value="${esc(current)}"></label>
+    ${isChange ? "" : '<label class="field">Invite code <span class="sub">(optional)</span><input name="invite" maxlength="32" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. TESTER-7K2P9Q"></label>'}
     <p class="err" role="alert" hidden></p>
     <button class="btn">${isChange ? "Save" : "Create my card"}</button>
   </form>`;
@@ -56,8 +57,25 @@ function nameView(isChange = false, current = "") {
     if (!first_name) { err.textContent = "Please add a name."; err.hidden = false; return; }
     const { error } = await client.rpc("join_card", { p_first_name: first_name });
     if (error) { err.textContent = "Sorry, that didn't save. Please try again."; err.hidden = false; return; }
+    const code = (f.elements.invite?.value || "").trim();
+    if (code) flash = await useInvite(code);
     loadCard();
   });
+}
+
+let flash = ""; // a one-off message shown above the card after an invite code is tried
+const INVITE_MSG = {
+  ok: "Your invite code worked. This is now a lifetime card. Thanks for helping us!",
+  already: "This card is already a lifetime card.",
+  bad_code: "That invite code didn't work. Check it and try again, or ask us for a new one.",
+  too_many: "Too many tries just now. Please wait an hour and try again.",
+  no_card: "Please create your card first, then add the code.",
+  error: "We couldn't check that code just now. Please try again.",
+};
+async function useInvite(code) {
+  const { data, error } = await client.rpc("redeem_invite", { p_code: code });
+  if (error || !data) return INVITE_MSG.error;
+  return data.ok ? (data.already ? INVITE_MSG.already : INVITE_MSG.ok) : (INVITE_MSG[data.reason] || INVITE_MSG.bad_code);
 }
 
 function qrSvg(text) {
@@ -71,6 +89,7 @@ function cardView(c) {
     <div class="fcard" aria-label="Family card for ${esc(c.first_name)}">
       <div class="fcard-top">${LOGO}<span><b>Bristol Free</b><small>Family card</small></span></div>
       <div class="fcard-name">${esc(c.first_name)}</div>
+      ${c.plan === "lifetime" ? '<div class="fcard-badge">Lifetime member</div>' : ""}
       <div class="fcard-since">Member since ${since}</div>
       <div class="fcard-qr" id="qr" role="img" aria-label="Card code for staff to scan"></div>
       <div class="fcard-live"><span class="dot" aria-hidden="true"></span><span id="clock"></span><span id="fresh">Live code</span></div>
@@ -78,6 +97,9 @@ function cardView(c) {
     </div>
     <p class="note" style="text-align:center">Show this screen at the till. The code changes every 30 seconds, so screenshots won't work.</p>
     <div class="fcard-actions">${preview ? '<button type="button" class="btn" id="out">Get my own card</button><a class="btn ghost" href="/deals.html">See member deals</a>' : '<a class="btn" href="/deals.html">See member deals</a><button type="button" class="btn ghost" id="rename">Change name</button><button type="button" class="btn ghost" id="out">Sign out</button>'}</div>
+    ${!preview && !DEMO && c.plan !== "lifetime" ? `<details class="panel tip" id="invite-box"><summary>Got an invite code?</summary>
+      <form id="invite-form" class="invite-form" novalidate><label class="field">Invite code<input name="code" required maxlength="32" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. TESTER-7K2P9Q"></label><button class="btn">Use code</button></form>
+      <p class="err" role="alert" hidden></p></details>` : ""}
     <section class="panel savings" id="savings" aria-label="Your savings"><div class="lp-loading" style="padding:10px 0">Loading your savings…</div></section>
     <details class="panel tip"><summary>Tip: open your card in one tap</summary><p class="note">On iPhone, tap Share then "Add to Home Screen". On Android, tap the ⋮ menu then "Add to Home screen". Your card then opens like an app.</p></details>
   </div>`;
@@ -95,6 +117,15 @@ function cardView(c) {
   $("#out").addEventListener("click", async () => {
     if (preview) { preview = false; clearInterval(clock); return DEMO ? null : signInView(); }
     if (DEMO) return; await client.auth.signOut(); clearInterval(timer); signInView();
+  });
+  if (flash) { $(".fcard-wrap").insertAdjacentHTML("afterbegin", `<div class="${flash === INVITE_MSG.ok || flash === INVITE_MSG.already ? "ok" : "err"}" role="status">${esc(flash)}</div>`); flash = ""; }
+  $("#invite-form")?.addEventListener("submit", async e => {
+    e.preventDefault();
+    const fm = e.currentTarget, code = fm.elements.code.value.trim(), err = $("#invite-box .err"), btn = fm.querySelector("button");
+    if (!code) { err.textContent = "Please type your code."; err.hidden = false; return; }
+    btn.disabled = true; const msg = await useInvite(code); btn.disabled = false;
+    if (msg === INVITE_MSG.ok || msg === INVITE_MSG.already) { flash = msg; clearInterval(timer); return loadCard(); }
+    err.textContent = msg; err.hidden = false;
   });
   $("#rename")?.addEventListener("click", () => { if (DEMO) return; clearInterval(timer); nameView(true, c.first_name); });
   initSavings();

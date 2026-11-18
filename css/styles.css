@@ -414,3 +414,11 @@ details.dir[open] > summary::after { transform: translateY(1px) rotate(-135deg);
 .near:disabled { opacity: .7; cursor: progress; }
 .near-note { margin: -4px 0 12px; }
 .card .dist { display: block; margin-top: 4px; font-size: 13px; font-weight: 700; color: #2F6FED; }
+
+/* lifetime cards + invite codes */
+.fcard-badge { justify-self: start; margin: 2px 0 6px; padding: 4px 12px; border-radius: 999px; background: #FFE7AE; color: #0F2A44; font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.invite-form { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-top: 10px; }
+.invite-form .field { flex: 1 1 220px; margin: 0; }
+.invite-form input[name=code], .invite-form input[name=invite], .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .04em; }
+.invites h3 { margin: 0 0 6px; }
+.invites #inv-new .ok { margin-top: 12px; }

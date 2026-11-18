@@ -5,12 +5,13 @@ import { $, esc } from "./ui.js";
 
 let client = null, listings = [], usage = {}, keys = [];
 const store = { events: [], deals: [], recipes: [], suggestions: [], members: [] };
+let invites = [], invitesReady = true;
 const demo = {
   events: structuredClone(DEMO_EVENTS).map(x => ({ ...x, status: "published" })),
   deals: structuredClone(DEMO_DEALS).map(x => ({ ...x, status: "published" })),
   recipes: structuredClone(DEMO_RECIPES).map(x => ({ ...x, status: "published" })),
   suggestions: [{ id: "s1", kind: "event", status: "new", contact_name: "Jo", email: "jo@example.com", created_at: new Date().toISOString(), data: { title: "Toddler disco", date: new Date().toISOString().slice(0, 10), time: "10:00", weekly: true, venue: "Hanham Folk Centre", area: "East Bristol", price: "£3 per child" } }],
-  members: [{ user_id: "m1", first_name: "Sam", status: "active", created_at: new Date().toISOString() }],
+  members: [{ user_id: "m1", first_name: "Sam", status: "active", plan: "standard", created_at: new Date().toISOString() }, { user_id: "m2", first_name: "Jo", status: "active", plan: "lifetime", plan_note: "Founding tester", created_at: new Date().toISOString() }],
 };
 
 /* ---------- small helpers ---------- */
@@ -130,9 +131,11 @@ function set(f, vals) { for (const [k, v] of Object.entries(vals)) if (f.element
 /* ---------- data ---------- */
 async function load(table) {
   if (DEMO) { store[table] = demo[table]; return; }
-  const q = table === "members" ? client.from("members").select("user_id, first_name, status, created_at").order("created_at", { ascending: false })
+  const q = table === "members" ? client.from("members").select("user_id, first_name, status, plan, plan_note, created_at").order("created_at", { ascending: false })
     : client.from(table).select("*").order("created_at", { ascending: false });
-  const { data, error } = await q;
+  let { data, error } = await q;
+  if (error && table === "members") // before update-09 has been run
+    ({ data, error } = await client.from("members").select("user_id, first_name, status, created_at").order("created_at", { ascending: false }));
   store[table] = error ? [] : data;
 }
 async function save(table, id, row) {
@@ -222,9 +225,44 @@ function renderSugg() {
 function renderMembers() {
   const m = store.members;
   $("#mcount").textContent = m.length ? `(${m.length})` : "";
-  $("#list-members").innerHTML = m.length ? m.map(x => `<div class="adm-row ${x.status !== "active" ? "past" : ""}"><div class="grow"><b>${esc(x.first_name)}</b><span class="sub">Joined ${new Date(x.created_at).toLocaleDateString("en-GB")}</span></div>
+  $("#list-members").innerHTML = m.length ? m.map(x => `<div class="adm-row ${x.status !== "active" ? "past" : ""}"><div class="grow"><b>${esc(x.first_name)}</b><span class="sub">Joined ${new Date(x.created_at).toLocaleDateString("en-GB")}${x.plan_note ? ` · ${esc(x.plan_note)}` : ""}</span></div>
+    ${x.plan === "lifetime" ? `<span class="badge open">Lifetime</span><button class="btn ghost" data-plan="${esc(x.user_id)}:standard">Make standard</button>` : x.plan === "standard" ? `<button class="btn ghost" data-plan="${esc(x.user_id)}:lifetime">Make lifetime</button>` : ""}
     ${x.status === "active" ? `<button class="btn ghost" data-pause="${esc(x.user_id)}">Pause card</button>` : `<span class="badge draft">Paused</span><button class="btn ghost" data-unpause="${esc(x.user_id)}">Unpause</button>`}</div>`).join("")
     : '<div class="empty">No family cards yet. Families get one at /card.html.</div>';
+}
+
+async function loadInvites() {
+  if (DEMO) { invites = invites.length ? invites : [{ code: "TESTER-7K2P9Q", note: "Founding tester: Jo", created_at: new Date().toISOString(), used_at: new Date().toISOString() }]; return; }
+  const { data, error } = await client.from("invite_codes").select("*").order("created_at", { ascending: false });
+  invitesReady = !error; invites = error ? [] : data;
+}
+function renderInvites() {
+  if (!invitesReady) { $("#invites").innerHTML = '<h3>Lifetime card invite codes</h3><p class="note">Run <b>update-09-lifetime-cards.sql</b> in Supabase to switch this on.</p>'; return; }
+  $("#list-invites").innerHTML = invites.length ? invites.map(x => `<div class="adm-row ${x.used_at ? "past" : ""}"><div class="grow"><b class="mono">${esc(x.code)}</b><span class="sub">${x.note ? esc(x.note) + " · " : ""}made ${new Date(x.created_at).toLocaleDateString("en-GB")}</span></div>
+    ${x.used_at ? `<span class="badge">Used ${new Date(x.used_at).toLocaleDateString("en-GB")}</span>` : `<span class="badge open">Not used yet</span><button class="btn ghost" data-copycode="${esc(x.code)}">Copy</button><button class="btn ghost" data-delcode="${esc(x.code)}">Delete</button>`}</div>`).join("")
+    : '<div class="empty">No codes yet.</div>';
+}
+$("#inv-form")?.addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = e.currentTarget, err = $("#invites .err"), btn = f.querySelector("button"), note = f.elements.note.value.trim();
+  err.hidden = true; btn.disabled = true;
+  let code;
+  if (DEMO) { code = "TESTER-" + Math.random().toString(36).slice(2, 8).toUpperCase(); invites.unshift({ code, note, created_at: new Date().toISOString() }); }
+  else {
+    const { data, error } = await client.rpc("new_invite_code", { p_note: note || null });
+    if (error) { err.textContent = "Couldn't make a code. Has update-09 been run?"; err.hidden = false; btn.disabled = false; return; }
+    code = data; await loadInvites();
+  }
+  btn.disabled = false; f.reset();
+  $("#inv-new").innerHTML = `<div class="ok" role="status">New code: <b class="mono">${esc(code)}</b> <button type="button" class="btn ghost" data-copycode="${esc(code)}">Copy</button><br><span class="note">Send it to them with the link: ${esc(location.origin)}/card.html</span></div>`;
+  renderInvites();
+});
+async function setPlan(id, plan) {
+  const m = store.members.find(x => x.user_id === id);
+  if (plan === "standard" && !confirm(`Take ${m.first_name}'s lifetime card back to a standard card?`)) return;
+  const row = { plan, plan_note: plan === "lifetime" ? (m.plan_note || "Made lifetime in admin") : null };
+  if (!DEMO) { const { error } = await client.from("members").update(row).eq("user_id", id); if (error) return alert("Couldn't change that card."); }
+  Object.assign(m, row); renderMembers();
 }
 
 /* ---------- editor ---------- */
@@ -315,6 +353,15 @@ document.addEventListener("click", async e => {
     await loadUsage(); return renderKeys();
   }
   const sd = e.target.closest("[data-sdone]"); if (sd) return markDone(sd.dataset.sdone).catch(() => alert("Couldn't update that suggestion."));
+  const pl = e.target.closest("[data-plan]"); if (pl) { const [id, plan] = pl.dataset.plan.split(":"); return setPlan(id, plan); }
+  const cc = e.target.closest("[data-copycode]");
+  if (cc) { try { await navigator.clipboard.writeText(cc.dataset.copycode); cc.textContent = "Copied!"; } catch { cc.textContent = cc.dataset.copycode; } return setTimeout(() => { cc.textContent = "Copy"; }, 1800); }
+  const dc = e.target.closest("[data-delcode]");
+  if (dc) {
+    if (!confirm(`Delete code ${dc.dataset.delcode}? It won't work after this.`)) return;
+    if (!DEMO) { const { error } = await client.from("invite_codes").delete().eq("code", dc.dataset.delcode).is("used_at", null); if (error) return alert("Couldn't delete that code."); }
+    invites = invites.filter(x => x.code !== dc.dataset.delcode); return renderInvites();
+  }
   const p = e.target.closest("[data-pause]"); if (p) return setMember(p.dataset.pause, "suspended");
   const up = e.target.closest("[data-unpause]"); if (up) return setMember(up.dataset.unpause, "active");
 });
@@ -323,8 +370,8 @@ document.addEventListener("click", async e => {
 async function init(detail) {
   if (client !== null || (!DEMO && !detail.client)) return;
   client = detail.client || false; listings = detail.listings || [];
-  await Promise.all([...["events", "deals", "recipes", "suggestions", "members"].map(load), loadUsage()]);
-  ["events", "deals", "recipes"].forEach(renderList); renderSugg(); renderMembers(); renderKeys();
+  await Promise.all([...["events", "deals", "recipes", "suggestions", "members"].map(load), loadUsage(), loadInvites()]);
+  ["events", "deals", "recipes"].forEach(renderList); renderSugg(); renderMembers(); renderKeys(); renderInvites();
 }
 if (window.__admin) init(window.__admin);
 window.addEventListener("admin-ready", e => init(e.detail));
