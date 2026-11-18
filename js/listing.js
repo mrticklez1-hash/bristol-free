@@ -1,3 +1,4 @@
+import { addBasemap } from "./basemap.js";
 import { fetchListing, fetchListings, CATS, PRICE, slugify, listingUrl } from "./data.js";
 import { $, esc, icon, scene, card, initHeader, wireModal, openListing, ageText, safeUrl, share } from "./ui.js";
 import { handleClaim } from "./claim.js";
@@ -36,8 +37,8 @@ async function addMap(l) {
   try {
     if (!window.L) await new Promise((res, rej) => { const s = document.createElement("script"); s.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"; s.integrity = "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="; s.crossOrigin = ""; s.onload = res; s.onerror = rej; document.head.append(s); });
     const approx = !l.address && !l.postcode;
-    const map = L.map("lp-map", { scrollWheelZoom: false }).setView([l.lat, l.lng], approx ? 12 : 15);
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
+    const map = L.map("lp-map", { scrollWheelZoom: false, maxZoom: 19 }).setView([l.lat, l.lng], approx ? 12 : 15);
+    addBasemap(map);
     L.marker([l.lat, l.lng], { title: l.name, alt: l.name }).addTo(map);
   } catch { $("#lp-map").innerHTML = '<div class="empty" style="height:100%;display:grid;place-items:center">The map couldn\'t load.</div>'; }
 }

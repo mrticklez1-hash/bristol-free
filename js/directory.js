@@ -1,3 +1,4 @@
+import { addBasemap } from "./basemap.js";
 import { fetchListings, AREAS, CATS, PRICE } from "./data.js";
 import { $, card, initHeader, openListing, wireModal, esc } from "./ui.js";
 import { handleClaim } from "./claim.js";
@@ -23,8 +24,8 @@ async function loadLeaflet() {
 async function initMap() {
   try {
     await loadLeaflet();
-    map = L.map("map", { scrollWheelZoom: false }).setView([51.47, -2.6], 10);
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
+    map = L.map("map", { scrollWheelZoom: false, maxZoom: 19 }).setView([51.47, -2.6], 10);
+    addBasemap(map);
     cluster = L.markerClusterGroup ? L.markerClusterGroup({ showCoverageOnHover: false, maxClusterRadius: 45 }) : L.layerGroup();
     map.addLayer(cluster);
   } catch (e) {

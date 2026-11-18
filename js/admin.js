@@ -1,3 +1,4 @@
+import { addBasemap } from "./basemap.js";
 import { DEMO, sb, AREAS, CATS, PRICE, listingUrl } from "./data.js";
 import { DEMO_LISTINGS } from "./demo-data.js";
 import { $, esc, initHeader, readForm } from "./ui.js";
@@ -167,8 +168,8 @@ let emap = null, pin = null, pendingFile = null;
 async function ensureMap() {
   if (!window.L) await new Promise((res, rej) => { const s = document.createElement("script"); s.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"; s.integrity = "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="; s.crossOrigin = ""; s.onload = res; s.onerror = rej; document.head.append(s); });
   if (emap) return;
-  emap = L.map("emap").setView([51.47, -2.6], 10);
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(emap);
+  emap = L.map("emap", { maxZoom: 19 }).setView([51.47, -2.6], 10);
+  addBasemap(emap);
   emap.on("click", e => setPin(e.latlng.lat, e.latlng.lng));
 }
 function setPin(lat, lng, zoom) {
