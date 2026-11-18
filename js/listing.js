@@ -1,6 +1,6 @@
 import { addBasemap } from "./basemap.js";
 import { fetchListing, fetchListings, CATS, PRICE, slugify, listingUrl } from "./data.js";
-import { $, esc, icon, scene, card, initHeader, wireModal, openListing, ageText, safeUrl, share } from "./ui.js";
+import { $, esc, icon, scene, card, initHeader, wireModal, openListing, ageText, safeUrl, share, telHref, phoneHtml, reviewsUrl } from "./ui.js";
 import { handleClaim } from "./claim.js";
 
 initHeader();
@@ -72,6 +72,7 @@ async function start() {
       <div class="lp-actions">
         ${directions ? `<a class="btn" href="${directions}" target="_blank" rel="noopener">Get directions</a>` : ""}
         ${web ? `<a class="btn ghost" href="${esc(web)}" target="_blank" rel="noopener">Visit website</a>` : ""}
+        ${l.phone && telHref(l.phone) ? `<a class="btn ghost" href="${telHref(l.phone)}">Call ${esc(l.phone)}</a>` : ""}
         <button type="button" class="btn ghost" id="lp-share" data-share="${esc(listingUrl(l))}" data-title="${esc(l.name)}">Share</button>
       </div>
       <div id="lp-claim"></div>
@@ -84,8 +85,9 @@ async function start() {
           ${l.ages?.length ? `<dt>Ages</dt><dd>${esc(ageText(l.ages))}</dd>` : ""}
           ${l.opening_hours ? `<dt>Opening hours</dt><dd>${esc(l.opening_hours)}</dd>` : ""}
           ${l.address || l.postcode ? `<dt>Address</dt><dd>${esc([l.address, l.area, l.postcode].filter(Boolean).join(", "))}</dd>` : `<dt>Area</dt><dd>${esc(l.area)}</dd>`}
-          ${l.phone ? `<dt>Phone</dt><dd>${esc(l.phone)}</dd>` : ""}
+          ${l.phone ? `<dt>Phone</dt><dd>${phoneHtml(l.phone)}</dd>` : ""}
         </dl>
+        ${reviewsUrl(l) ? `<a class="btn ghost lp-reviews" href="${esc(reviewsUrl(l))}" target="_blank" rel="noopener">See Google reviews</a><p class="note" style="margin-top:6px">Reviews are written by Google users, not by us.</p>` : ""}
         <p class="note">Details can change, so check before you travel.</p>
       </div>
       ${hasPin ? `<div id="lp-map" class="lp-map" role="region" aria-label="Map"></div>${approx ? '<p class="note" style="margin-top:6px">Pin shows the area they cover, not a venue.</p>' : ""}` : ""}

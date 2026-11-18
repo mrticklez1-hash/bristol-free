@@ -48,6 +48,28 @@ export function initHeader() {
   if (DEMO) document.body.insertAdjacentHTML("afterbegin", '<div class="demo-bar"><b>Demo mode</b> · showing sample listings until the database is connected.</div>');
 }
 
+
+/* tap-to-call: turns "0117 379 0979" into tel:+441173790979 */
+export function telHref(phone) {
+  const raw = String(phone || "").trim();
+  let d = raw.replace(/[^\d+]/g, "");
+  if (d.startsWith("00")) d = "+" + d.slice(2);
+  else if (d.startsWith("0")) d = "+44" + d.slice(1);
+  return d.replace(/\D/g, "").length >= 9 ? "tel:" + d : "";
+}
+export function phoneHtml(phone) {
+  const t = telHref(phone);
+  return t ? `<a href="${t}" class="tel">${esc(phone)}</a>` : esc(phone);
+}
+/* Google reviews link: not shown for parks and outdoor spots, or when we can't pin down the place */
+export function reviewsUrl(l) {
+  if (!l || l.category === "outdoors") return "";
+  const pid = l.google_place_id && String(l.google_place_id).trim();
+  if (!pid && !l.postcode) return "";
+  const q = encodeURIComponent([l.name, l.postcode || l.area].filter(Boolean).join(" "));
+  return `https://www.google.com/maps/search/?api=1&query=${q}${pid ? `&query_place_id=${encodeURIComponent(pid)}` : ""}`;
+}
+
 /* ---------- listing modal + claim form ---------- */
 let lastFocus = null;
 export function openListing(l, { onClaim } = {}) {
@@ -65,11 +87,13 @@ export function openListing(l, { onClaim } = {}) {
         <div><b>Price:</b> ${PRICE[l.price_band] ?? ""}</div>
         ${l.ages?.length ? `<div><b>Ages:</b> ${esc(ageText(l.ages))}</div>` : ""}
         ${l.opening_hours ? `<div><b>Opening hours:</b> ${esc(l.opening_hours)}</div>` : ""}
-        ${l.phone ? `<div><b>Phone:</b> ${esc(l.phone)}</div>` : ""}
+        ${l.phone ? `<div><b>Phone:</b> ${phoneHtml(l.phone)}</div>` : ""}
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <a class="btn" href="${listingUrl(l)}">View full page</a>
         ${web ? `<a class="btn ghost" href="${esc(web)}" target="_blank" rel="noopener">Visit website</a>` : ""}
+        ${l.phone && telHref(l.phone) ? `<a class="btn ghost" href="${telHref(l.phone)}">Call</a>` : ""}
+        ${reviewsUrl(l) ? `<a class="btn ghost" href="${esc(reviewsUrl(l))}" target="_blank" rel="noopener">Google reviews</a>` : ""}
         <button type="button" class="btn ghost" data-share="${esc(listingUrl(l))}" data-title="${esc(l.name)}">Share</button>
       </div>
       ${l.photo_credit ? `<p class="note">${esc(l.photo_credit)}</p>` : ""}

@@ -387,3 +387,7 @@ body.wash main{background:linear-gradient(var(--tone),var(--paper) 420px)}
 .cal{background:#fff}
 .links{background:transparent}
 @media(max-width:1080px){.links{background:var(--paper)}}
+
+/* tap-to-call phone numbers */
+a.tel { color: var(--navy, #0F2A44); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+.lp-reviews { margin-top: 14px; width: 100%; justify-content: center; }
