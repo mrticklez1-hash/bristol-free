@@ -70,6 +70,38 @@ export function reviewsUrl(l) {
   return `https://www.google.com/maps/search/?api=1&query=${q}${pid ? `&query_place_id=${encodeURIComponent(pid)}` : ""}`;
 }
 
+
+/* Directions: pick Google Maps, Apple Maps or Waze, or copy the postcode for a car satnav.
+   Only for listings with a real address or postcode (not mobile businesses). */
+export function directionsMenu(l, label = "Get directions") {
+  if (!l || (!l.address && !l.postcode)) return "";
+  const exact = typeof l.lat === "number" && typeof l.lng === "number";
+  const dest = exact ? `${l.lat},${l.lng}` : l.postcode;
+  if (!dest) return "";
+  const d = encodeURIComponent(dest);
+  const links = [
+    ["Google Maps", `https://www.google.com/maps/dir/?api=1&destination=${d}`],
+    ["Apple Maps", `https://maps.apple.com/?daddr=${d}&dirflg=d`],
+    ["Waze", exact ? `https://waze.com/ul?ll=${d}&navigate=yes` : `https://waze.com/ul?q=${d}&navigate=yes`],
+  ];
+  return `<details class="dir"><summary class="btn">${esc(label)}</summary><div class="dir-menu" role="menu">
+    ${links.map(([n, u]) => `<a role="menuitem" href="${u}" target="_blank" rel="noopener">${n}</a>`).join("")}
+    ${l.postcode ? `<button type="button" role="menuitem" data-copy="${esc(l.postcode)}">Copy postcode for satnav <b>${esc(l.postcode)}</b></button>` : ""}
+  </div></details>`;
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-copy]");
+  if (b) {
+    const old = b.innerHTML;
+    try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = "Postcode copied!"; }
+    catch { b.textContent = "Postcode: " + b.dataset.copy; }
+    setTimeout(() => { b.innerHTML = old; }, 2200);
+    return;
+  }
+  document.querySelectorAll("details.dir[open]").forEach(d => { if (!d.contains(e.target)) d.open = false; });
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") document.querySelectorAll("details.dir[open]").forEach(d => { d.open = false; }); });
+
 /* ---------- listing modal + claim form ---------- */
 let lastFocus = null;
 export function openListing(l, { onClaim } = {}) {
@@ -91,6 +123,7 @@ export function openListing(l, { onClaim } = {}) {
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <a class="btn" href="${listingUrl(l)}">View full page</a>
+        ${directionsMenu(l, "Directions")}
         ${web ? `<a class="btn ghost" href="${esc(web)}" target="_blank" rel="noopener">Visit website</a>` : ""}
         ${l.phone && telHref(l.phone) ? `<a class="btn ghost" href="${telHref(l.phone)}">Call</a>` : ""}
         ${reviewsUrl(l) ? `<a class="btn ghost" href="${esc(reviewsUrl(l))}" target="_blank" rel="noopener">Google reviews</a>` : ""}

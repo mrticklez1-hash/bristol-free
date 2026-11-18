@@ -391,3 +391,18 @@ body.wash main{background:linear-gradient(var(--tone),var(--paper) 420px)}
 /* tap-to-call phone numbers */
 a.tel { color: var(--navy, #0F2A44); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
 .lp-reviews { margin-top: 14px; width: 100%; justify-content: center; }
+
+/* directions chooser */
+details.dir { position: relative; display: inline-block; }
+details.dir > summary { list-style: none; cursor: pointer; }
+details.dir > summary::-webkit-details-marker { display: none; }
+details.dir > summary::after { content: ""; display: inline-block; margin-left: 8px; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-3px) rotate(45deg); transition: transform .15s; }
+details.dir[open] > summary::after { transform: translateY(1px) rotate(-135deg); }
+.dir-menu { position: absolute; z-index: 40; top: calc(100% + 8px); left: 0; min-width: 240px; background: #fff; border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 12px 30px rgba(15,42,68,.14); padding: 6px; display: grid; }
+.dir-menu a, .dir-menu button { display: block; text-align: left; padding: 12px 14px; border-radius: 10px; font: inherit; font-weight: 600; color: var(--navy); text-decoration: none; background: none; border: 0; cursor: pointer; min-height: 44px; }
+.dir-menu a:hover, .dir-menu button:hover, .dir-menu a:focus-visible, .dir-menu button:focus-visible { background: var(--periwinkle, #E6EDFD); }
+.dir-menu button { border-top: 1px solid var(--line); border-radius: 0 0 10px 10px; margin-top: 4px; }
+.dir-menu button b { white-space: nowrap; }
+/* inside the listing pop-up the menu opens in place, so it never gets clipped */
+#sheet details.dir[open] { flex-basis: 100%; }
+#sheet .dir-menu { position: static; margin-top: 8px; box-shadow: none; min-width: 0; }

@@ -1,6 +1,6 @@
 import { addBasemap } from "./basemap.js";
 import { fetchListing, fetchListings, CATS, PRICE, slugify, listingUrl } from "./data.js";
-import { $, esc, icon, scene, card, initHeader, wireModal, openListing, ageText, safeUrl, share, telHref, phoneHtml, reviewsUrl } from "./ui.js";
+import { $, esc, icon, scene, card, initHeader, wireModal, openListing, ageText, safeUrl, share, telHref, phoneHtml, reviewsUrl, directionsMenu } from "./ui.js";
 import { handleClaim } from "./claim.js";
 
 initHeader();
@@ -54,7 +54,6 @@ async function start() {
   const web = safeUrl(l.website);
   const hasPin = typeof l.lat === "number";
   const approx = hasPin && !l.address && !l.postcode; // pin marks the area covered, not a venue
-  const directions = hasPin && !approx ? `https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lng}` : (l.postcode ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(l.postcode)}` : "");
   $("#crumb").textContent = l.name;
 
   $("#lp-loading").outerHTML = `
@@ -70,7 +69,7 @@ async function start() {
       <h1 class="lp-title">${esc(l.name)}</h1>
       ${l.description ? `<p class="lp-desc">${esc(l.description)}</p>` : ""}
       <div class="lp-actions">
-        ${directions ? `<a class="btn" href="${directions}" target="_blank" rel="noopener">Get directions</a>` : ""}
+        ${directionsMenu(l)}
         ${web ? `<a class="btn ghost" href="${esc(web)}" target="_blank" rel="noopener">Visit website</a>` : ""}
         ${l.phone && telHref(l.phone) ? `<a class="btn ghost" href="${telHref(l.phone)}">Call ${esc(l.phone)}</a>` : ""}
         <button type="button" class="btn ghost" id="lp-share" data-share="${esc(listingUrl(l))}" data-title="${esc(l.name)}">Share</button>
