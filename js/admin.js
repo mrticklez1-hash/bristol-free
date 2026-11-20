@@ -1,5 +1,6 @@
 import { addBasemap } from "./basemap.js";
 import { compressImage, prettySize } from "./compress.js";
+import { FACILITIES, facBubble } from "./facilities.js";
 import { DEMO, sb, AREAS, CATS, PRICE, listingUrl } from "./data.js";
 import { DEMO_LISTINGS } from "./demo-data.js";
 import { $, esc, initHeader, readForm } from "./ui.js";
@@ -59,9 +60,38 @@ async function saveListing(row) {
     else demoStore.listings.push({ ...row, id: "demo-" + Date.now() });
     return;
   }
-  const q = editing?.id ? client.from("listings").update(row).eq("id", editing.id) : client.from("listings").insert(row);
-  const { error } = await q;
+  const q = editing?.id ? client.from("listings").update(row).eq("id", editing.id) : client.from("listings").insert(row).select("id").single();
+  const { data, error } = await q;
   if (error) throw error;
+  return editing?.id || data?.id;
+}
+
+/* ---------- facilities in the editor ---------- */
+let facLoaded = {}; // facility -> { value, confirmed_by }
+function renderFacGrid() {
+  $("#e-fac-grid").innerHTML = FACILITIES.map(f => `<label class="e-fac-row">${facBubble(f.key, 30, 17)}<span>${f.label}</span>
+    <select name="fac_${f.key}"><option value="">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select></label>`).join("");
+}
+async function loadFacilities(id) {
+  facLoaded = {};
+  if (id && !DEMO) {
+    const { data } = await client.from("listing_facilities").select("facility, value, confirmed_by").eq("listing_id", id);
+    for (const r of data || []) facLoaded[r.facility] = r;
+  }
+  const f = $("#eform");
+  for (const x of FACILITIES) f.elements["fac_" + x.key].value = facLoaded[x.key]?.value || "";
+}
+async function saveFacilities(id) {
+  if (DEMO || !id) return;
+  const f = $("#eform"), by = f.elements.fac_by.value, today = new Date().toISOString().slice(0, 10);
+  const up = [], del = [];
+  for (const x of FACILITIES) {
+    const v = f.elements["fac_" + x.key].value, was = facLoaded[x.key];
+    if (!v && was) del.push(x.key);
+    else if (v && (!was || was.value !== v)) up.push({ listing_id: id, facility: x.key, value: v, confirmed_by: by, checked_on: today, source: by === "business" ? "Confirmed by the business" : by === "parent" ? "Parent update" : "Our research" });
+  }
+  if (up.length) { const { error } = await client.from("listing_facilities").upsert(up, { onConflict: "listing_id,facility" }); if (error) throw error; }
+  if (del.length) { const { error } = await client.from("listing_facilities").delete().eq("listing_id", id).in("facility", del); if (error) throw error; }
 }
 async function deleteListing(id) {
   if (DEMO) { demoStore.listings = demoStore.listings.filter(x => x.id !== id); return; }
@@ -190,6 +220,8 @@ async function openEditor(l) {
   f.elements.category.value = v.category; f.elements.area.value = v.area; f.elements.price_band.value = String(v.price_band ?? 0);
   f.querySelectorAll("input[name=ages]").forEach(c => c.checked = (v.ages || []).includes(c.value));
   f.elements.published.checked = v.status !== "draft"; f.elements.claimed.checked = !!v.claimed; f.elements.featured.checked = !!v.featured;
+  f.elements.last_checked.value = v.last_checked || ""; f.elements.fac_by.value = v.claimed ? "business" : "research";
+  loadFacilities(l?.id);
   showPreview(v.image_url);
   $("#emodal").classList.add("on");
   f.elements.name.focus();
@@ -250,7 +282,9 @@ $("#eform").addEventListener("submit", async e => {
     };
     // only sent once the google_place_id column exists (update-08), so saving never breaks before then
     if (d.google_place_id || f.dataset.hasPid) row.google_place_id = (d.google_place_id || "").trim() || null;
-    await saveListing(row);
+    row.last_checked = d.last_checked || null;
+    const id = await saveListing(row);
+    await saveFacilities(id);
     closeEditor(); await loadAll(); renderListings();
   } catch (x) {
     er.textContent = "Couldn't save. " + (x?.message || "Please try again."); er.hidden = false;
@@ -263,4 +297,5 @@ $("#e-del").addEventListener("click", async () => {
   catch { const er = $("#eform .err"); er.textContent = "Couldn't delete that listing."; er.hidden = false; }
 });
 
+renderFacGrid();
 start();

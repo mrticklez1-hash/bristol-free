@@ -1,4 +1,5 @@
 import { CATS, PRICE, AGES, DEMO, listingUrl, dealIndex, wishCounts, myWishes, toggleWish } from "./data.js";
+import { fillFacilities, facBubble } from "./facilities.js";
 
 export const $ = s => document.querySelector(s);
 export const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
@@ -34,7 +35,7 @@ export function thumb(l) {
 
 export function card(l) {
   const c = CATS[l.category] || CATS.play;
-  return `<button class="card" data-id="${esc(l.id)}">${thumb(l)}<div class="body"><h3>${esc(l.name)}</h3><span class="sub">${esc(l.area)} · ${c.n}</span>${typeof l._dist === "number" ? `<span class="dist">${distText(l._dist)}${!l.address && !l.postcode ? " · area they cover" : ""}</span>` : ""}${l._deal ? `<span class="card-deal">${qrMark(18)}Family card deal</span>` : ""}${l.claimed ? "" : '<span class="unclaimed">Free listing · unclaimed</span>'}</div></button>`;
+  return `<button class="card" data-id="${esc(l.id)}">${thumb(l)}<div class="body"><h3>${esc(l.name)}</h3><span class="sub">${esc(l.area)} · ${c.n}</span>${typeof l._dist === "number" ? `<span class="dist">${distText(l._dist)}${!l.address && !l.postcode ? " · area they cover" : ""}</span>` : ""}${l._fac?.length ? `<span class="card-fac">${l._fac.slice(0, 4).map(k => facBubble(k, 28, 16)).join("")}${l._fac.length > 4 ? `<b>+${l._fac.length - 4}</b>` : ""}</span>` : ""}${l._deal ? `<span class="card-deal">${qrMark(18)}Family card deal</span>` : ""}${l.claimed ? "" : '<span class="unclaimed">Free listing · unclaimed</span>'}</div></button>`;
 }
 
 export function distText(mi) {
@@ -174,6 +175,7 @@ export function openListing(l, { onClaim } = {}) {
         ${l.phone ? `<div><b>Phone:</b> ${phoneHtml(l.phone)}</div>` : ""}
       </div>
       <div class="dw" data-dw></div>
+      <div data-fac></div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <a class="btn" href="${listingUrl(l)}">View full page</a>
         ${directionsMenu(l, "Directions")}
@@ -187,6 +189,7 @@ export function openListing(l, { onClaim } = {}) {
     </div>`;
   const m = $("#modal");
   fillDealOrWish(m.querySelector("[data-dw]"), l);
+  fillFacilities(m.querySelector("[data-fac]"), l);
   m.classList.add("on");
   m.querySelector(".x").addEventListener("click", closeListing);
   m.querySelector(".x").focus();

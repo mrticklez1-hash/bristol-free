@@ -58,6 +58,7 @@
         <button type="button" role="tab" data-tab="m" aria-selected="false">Members <span id="mcount"></span></button>
         <button type="button" role="tab" data-tab="i" aria-selected="false">Waiting list <span id="icount"></span></button>
         <button type="button" role="tab" data-tab="w" aria-selected="false">Deal wishes <span id="wcount"></span></button>
+        <button type="button" role="tab" data-tab="u" aria-selected="false">Updates <span id="ucount"></span></button>
       </div>
       <button class="btn ghost" id="logout">Sign out</button>
     </div>
@@ -93,6 +94,10 @@
         <div id="list-invites" class="adm-list"></div>
       </div>
       <p class="note" style="margin:18px 0 10px">Families with a card. Pausing a card makes it show "paused" when a business scans it. "Make lifetime" gives that card a free lifetime upgrade.</p><div id="list-members" class="adm-list"></div></div>
+    <div id="pane-u" hidden>
+      <p class="note" style="margin-bottom:12px">Updates parents sent with "Update info or facilities". Approving facilities adds them to the listing as confirmed by a parent (never over a business's own answers). For changes and closures, edit the listing, then mark it done.</p>
+      <div id="list-updates" class="adm-list"></div>
+    </div>
     <div id="pane-w" hidden>
       <p class="note" style="margin-bottom:12px">Places parents have tapped "I'd love a family deal here" on. Card holders are signed-in families; the rest are one per device. Use these numbers when you ask a business to add a deal.</p>
       <div id="wish-summary"></div>
@@ -146,6 +151,11 @@
     </div>
     <img id="e-prev" alt="" style="max-height:160px;border-radius:12px;object-fit:cover" hidden>
     <label class="field">Photo credit (needed for Creative Commons photos)<input name="photo_credit" maxlength="300" placeholder="e.g. Photo: Jane Smith, CC BY-SA 4.0, via Wikimedia Commons"></label>
+    <fieldset class="field e-fac"><legend>Facilities <span class="sub">(leave as "Unknown" unless you're sure)</span></legend>
+      <div id="e-fac-grid" class="e-fac-grid"></div>
+      <div class="claim-two"><label class="field">Confirmed by<select name="fac_by"><option value="research">Our research</option><option value="parent">A parent</option><option value="business">The business</option></select></label>
+      <label class="field">Details last checked<input type="date" name="last_checked"></label></div>
+    </fieldset>
     <div class="chips" style="gap:16px">
       <label class="check"><input type="checkbox" name="published"> Published (visible on the site)</label>
       <label class="check"><input type="checkbox" name="claimed"> Claimed by the business</label>
@@ -168,5 +178,6 @@
 <script type="module" src="/js/admin-content.js"></script>
 <script type="module" src="/js/admin-interest.js"></script>
 <script type="module" src="/js/admin-wishes.js"></script>
+<script type="module" src="/js/admin-updates.js"></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 import { addBasemap } from "./basemap.js";
 import { fetchListings, AREAS, CATS, PRICE, dealIndex } from "./data.js";
 import { $, card, initHeader, openListing, wireModal, esc, qrMark } from "./ui.js";
+import { FACILITIES, FAC, facIcon, facilitiesIndex, yesKeys } from "./facilities.js";
 import { handleClaim } from "./claim.js";
 
 initHeader();
@@ -77,12 +78,14 @@ function renderMap(list) {
 
 /* ---------- list + filters ---------- */
 let all = [];
+const facSel = new Set(new URLSearchParams(location.search).get("fac")?.split(",").filter(k => FAC[k]) || []);
 const rank = l => (l.featured ? 2 : 0) + (l.claimed ? 1 : 0);
 function filtered() {
   const q = $("#q").value.toLowerCase().trim(), a = $("#area").value, p = $("#price").value, g = $("#age").value;
   return all.filter(l =>
     (!activeCat || l.category === activeCat) && (!a || l.area === a) && (p === "" || l.price_band === +p) &&
     (!g || (l.ages || []).includes(g)) &&
+    [...facSel].every(k => l._fac?.includes(k)) &&
     (!q || `${l.name} ${l.description || ""} ${CATS[l.category]?.n || ""} ${l.area}`.toLowerCase().includes(q))
   ).sort(here
     ? (x, y) => (x._dist ?? 1e9) - (y._dist ?? 1e9) || x.name.localeCompare(y.name)
@@ -99,16 +102,29 @@ function syncUrl() {
   if ($("#price").value) u.set("price", $("#price").value);
   if ($("#age").value) u.set("age", $("#age").value);
   if (activeCat) u.set("cat", activeCat);
+  if (facSel.size) u.set("fac", [...facSel].join(","));
   history.replaceState(null, "", u.toString() ? `?${u}` : location.pathname);
 }
 function render() {
   const list = filtered();
   $("#count").textContent = `${list.length} ${list.length === 1 ? "place" : "places"} found`;
+  const fn = $("#fac-note");
+  fn.hidden = !facSel.size;
+  if (facSel.size) fn.textContent = `Showing places confirmed to have ${[...facSel].map(k => FAC[k].label.toLowerCase()).join(" and ")}. Others may have ${facSel.size > 1 ? "these" : "this"} too.`;
   $("#results").innerHTML = list.length ? list.map(card).join("") :
     '<div class="empty">No matches yet. Try another area, budget or category.<br><br><a class="btn ghost" href="/business.html">Suggest a place</a></div>';
   renderMap(list); syncUrl();
 }
 
+function renderFacChips() {
+  $("#fac-chips").innerHTML = FACILITIES.map(f => `<button type="button" class="chip fac-chip${facSel.has(f.key) ? " on" : ""}" data-fac="${f.key}" aria-pressed="${facSel.has(f.key)}"><span class="fac-b" style="width:26px;height:26px;background:${f.bg}">${facIcon(f.key, 15)}</span>${esc(f.label)}</button>`).join("");
+  $("#fac-count").textContent = facSel.size ? `(${facSel.size})` : "";
+}
+$("#fac-chips").addEventListener("click", e => {
+  const b = e.target.closest("[data-fac]"); if (!b) return;
+  facSel.has(b.dataset.fac) ? facSel.delete(b.dataset.fac) : facSel.add(b.dataset.fac);
+  renderFacChips(); render();
+});
 $("#chips").addEventListener("click", e => { const b = e.target.closest("[data-cat]"); if (!b) return; activeCat = b.dataset.cat; renderChips(); render(); });
 ["#q", "#area", "#price", "#age"].forEach(s => $(s).addEventListener("input", render));
 $("#results").addEventListener("click", e => {
@@ -142,8 +158,9 @@ nearBtn.addEventListener("click", () => {
   }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 300000 });
 });
 
-renderChips();
+renderChips(); renderFacChips();
+if (facSel.size) $("#fac-filter").open = true;
 const [, data, findDeal] = await Promise.all([initMap(), fetchListings().catch(() => null), dealIndex()]);
-if (data) data.forEach(l => { l._deal = !!findDeal(l); });
+if (data) { data.forEach(l => { l._deal = !!findDeal(l); }); const facM = await facilitiesIndex(data); data.forEach(l => { l._fac = yesKeys(facM.get(String(l.id))); }); }
 if (!data) { $("#results").innerHTML = '<div class="empty">Listings are taking a moment to load. Please refresh.</div>'; }
 else { all = data; render(); }

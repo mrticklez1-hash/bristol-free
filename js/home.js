@@ -1,4 +1,5 @@
 import { fetchListings, fetchEvents, fetchDeals, fetchRecipes, occurrences, AREAS, CATS, PRICE, listingUrl, dealIndex } from "./data.js";
+import { facilitiesIndex, yesKeys } from "./facilities.js";
 import { $, card, initHeader, openListing, wireModal, esc, dealCard, recipeCard } from "./ui.js";
 import { handleClaim } from "./claim.js";
 
@@ -16,7 +17,7 @@ $("#cat-links").innerHTML = Object.entries(CATS).map(([k, c]) => `<a class="chip
 let all = [];
 try {
   all = await fetchListings();
-  dealIndex().then(find => all.forEach(x => { x._deal = !!find(x); })).catch(() => {});
+  await Promise.all([dealIndex().then(find => all.forEach(x => { x._deal = !!find(x); })), facilitiesIndex(all).then(m => all.forEach(x => { x._fac = yesKeys(m.get(String(x.id))); }))]).catch(() => {});
 } catch (e) {
   $("#free").innerHTML = '<div class="empty">Listings are taking a moment to load. Please refresh.</div>';
 }
