@@ -37,6 +37,32 @@ function renderCal(list) {
     <div class="cal-grid"><i>M</i><i>T</i><i>W</i><i>T</i><i>F</i><i>S</i><i>S</i>${cells}</div>`;
 }
 
+/* ---------- add to calendar ---------- */
+const shownOcc = [];
+const pad = n => String(n).padStart(2, "0");
+const icsTime = d => `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+const endOf = o => o.end || new Date(o.at.getTime() + 60 * 60 * 1000);
+const where = o => [o.venue || o.listing?.name, o.area].filter(Boolean).join(", ");
+function gcalUrl(o) {
+  const p = new URLSearchParams({ action: "TEMPLATE", text: o.title, dates: `${icsTime(o.at)}/${icsTime(endOf(o))}`, details: [o.description, o.website].filter(Boolean).join("\n\n"), location: where(o) });
+  return `https://calendar.google.com/calendar/render?${p}`;
+}
+function icsEscape(s) { return String(s || "").replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/([,;])/g, "\\$1"); }
+function downloadIcs(o) {
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Bristol Free & Affordable//EN", "BEGIN:VEVENT",
+    `UID:${o.id || "ev"}-${icsTime(o.at)}@bristolfree`, `DTSTAMP:${icsTime(new Date())}`, `DTSTART:${icsTime(o.at)}`, `DTEND:${icsTime(endOf(o))}`,
+    `SUMMARY:${icsEscape(o.title)}`, `LOCATION:${icsEscape(where(o))}`, `DESCRIPTION:${icsEscape([o.description, o.website].filter(Boolean).join("\n\n"))}`,
+    "END:VEVENT", "END:VCALENDAR"];
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([lines.join("\r\n")], { type: "text/calendar" }));
+  a.download = (o.title || "event").replace(/[^a-z0-9]+/gi, "-").toLowerCase() + ".ics"; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-ics]"); if (!b) return;
+  downloadIcs(shownOcc[+b.dataset.ics]); b.closest("details").open = false;
+});
+
 function eventRow(o) {
   const web = safeUrl(o.website);
   const place = o.listing ? `<a href="${listingUrl(o.listing)}">${esc(o.venue || o.listing.name)}</a>` : esc(o.venue || "");
@@ -47,7 +73,10 @@ function eventRow(o) {
       <h3>${esc(o.title)}</h3>
       <span class="sub">${fmtTime(o.at)}${o.end ? `–${fmtTime(o.end)}` : ""}${place ? ` · ${place}` : ""} · ${esc(o.area)}</span>
       ${o.description ? `<p>${esc(o.description)}</p>` : ""}
-      <div class="ev-meta">${price}${o.ages?.length ? `<span class="note">${esc(ageText(o.ages))}</span>` : ""}${o.repeat_until ? '<span class="note">Every week</span>' : ""}${web ? `<a href="${esc(web)}" target="_blank" rel="noopener">More info</a>` : ""}</div>
+      <div class="ev-meta">${price}${o.ages?.length ? `<span class="note">${esc(ageText(o.ages))}</span>` : ""}${o.repeat_until ? '<span class="note">Every week</span>' : ""}${web ? `<a href="${esc(web)}" target="_blank" rel="noopener">More info</a>` : ""}
+        <details class="dir cal-add"><summary class="linkish">Add to my calendar</summary><div class="dir-menu" role="menu">
+          <button type="button" role="menuitem" data-ics="${shownOcc.push(o) - 1}">Apple or Outlook calendar</button>
+          <a role="menuitem" href="${gcalUrl(o)}" target="_blank" rel="noopener">Google Calendar</a></div></details></div>
     </div></article>`;
 }
 

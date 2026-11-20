@@ -1,6 +1,6 @@
 import { addBasemap } from "./basemap.js";
 import { fetchListings, AREAS, CATS, PRICE, dealIndex } from "./data.js";
-import { $, card, initHeader, openListing, wireModal, esc, qrMark } from "./ui.js";
+import { $, card, initHeader, openListing, wireModal, esc, qrMark, favourites } from "./ui.js";
 import { FACILITIES, FAC, facIcon, facilitiesIndex, yesKeys } from "./facilities.js";
 import { handleClaim } from "./claim.js";
 
@@ -78,14 +78,17 @@ function renderMap(list) {
 
 /* ---------- list + filters ---------- */
 let all = [];
+let savedOnly = false;
 const facSel = new Set(new URLSearchParams(location.search).get("fac")?.split(",").filter(k => FAC[k]) || []);
 const rank = l => (l.featured ? 2 : 0) + (l.claimed ? 1 : 0);
 function filtered() {
+  const favs = favourites();
   const q = $("#q").value.toLowerCase().trim(), a = $("#area").value, p = $("#price").value, g = $("#age").value;
   return all.filter(l =>
     (!activeCat || l.category === activeCat) && (!a || l.area === a) && (p === "" || l.price_band === +p) &&
     (!g || (l.ages || []).includes(g)) &&
     [...facSel].every(k => l._fac?.includes(k)) &&
+    (!savedOnly || favs.has(String(l.id))) &&
     (!q || `${l.name} ${l.description || ""} ${CATS[l.category]?.n || ""} ${l.area}`.toLowerCase().includes(q))
   ).sort(here
     ? (x, y) => (x._dist ?? 1e9) - (y._dist ?? 1e9) || x.name.localeCompare(y.name)
@@ -107,15 +110,19 @@ function syncUrl() {
 }
 function render() {
   const list = filtered();
-  $("#count").textContent = `${list.length} ${list.length === 1 ? "place" : "places"} found`;
+  $("#count").textContent = savedOnly ? `${list.length} saved ${list.length === 1 ? "place" : "places"}` : `${list.length} ${list.length === 1 ? "place" : "places"} found`;
+  const n = favourites().size; $("#saved-btn span").textContent = n ? `My places (${n})` : "My places";
   const fn = $("#fac-note");
   fn.hidden = !facSel.size;
   if (facSel.size) fn.textContent = `Showing places confirmed to have ${[...facSel].map(k => FAC[k].label.toLowerCase()).join(" and ")}. Others may have ${facSel.size > 1 ? "these" : "this"} too.`;
   $("#results").innerHTML = list.length ? list.map(card).join("") :
-    '<div class="empty">No matches yet. Try another area, budget or category.<br><br><a class="btn ghost" href="/business.html">Suggest a place</a></div>';
+    (savedOnly ? '<div class="empty">No saved places yet. Open any listing and tap <b>Save</b> to keep it here. Saved places stay on this phone or computer.</div>'
+    : '<div class="empty">No matches yet. Try another area, budget or category.<br><br><a class="btn ghost" href="/business.html">Suggest a place</a></div>');
   renderMap(list); syncUrl();
 }
 
+$("#saved-btn").addEventListener("click", e => { savedOnly = !savedOnly; e.currentTarget.setAttribute("aria-pressed", String(savedOnly)); render(); });
+document.addEventListener("favchange", () => { if (all.length) render(); });
 function renderFacChips() {
   $("#fac-chips").innerHTML = FACILITIES.map(f => `<button type="button" class="chip fac-chip${facSel.has(f.key) ? " on" : ""}" data-fac="${f.key}" aria-pressed="${facSel.has(f.key)}"><span class="fac-b" style="width:26px;height:26px;background:${f.bg}">${facIcon(f.key, 15)}</span>${esc(f.label)}</button>`).join("");
   $("#fac-count").textContent = facSel.size ? `(${facSel.size})` : "";

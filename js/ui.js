@@ -35,7 +35,7 @@ export function thumb(l) {
 
 export function card(l) {
   const c = CATS[l.category] || CATS.play;
-  return `<button class="card" data-id="${esc(l.id)}">${thumb(l)}<div class="body"><h3>${esc(l.name)}</h3><span class="sub">${esc(l.area)} · ${c.n}</span>${typeof l._dist === "number" ? `<span class="dist">${distText(l._dist)}${!l.address && !l.postcode ? " · area they cover" : ""}</span>` : ""}${l._fac?.length ? `<span class="card-fac">${l._fac.slice(0, 4).map(k => facBubble(k, 28, 16)).join("")}${l._fac.length > 4 ? `<b>+${l._fac.length - 4}</b>` : ""}</span>` : ""}${l._deal ? `<span class="card-deal">${qrMark(18)}Family card deal</span>` : ""}${l.claimed ? "" : '<span class="unclaimed">Free listing · unclaimed</span>'}</div></button>`;
+  return `<button class="card" data-id="${esc(l.id)}">${thumb(l)}<div class="body"><h3>${esc(l.name)}</h3><span class="sub">${esc(l.area)} · ${c.n}</span>${typeof l._dist === "number" ? `<span class="dist">${distText(l._dist)}${!l.address && !l.postcode ? " · area they cover" : ""}</span>` : ""}${l._fac?.length ? `<span class="card-fac">${l._fac.slice(0, 4).map(k => facBubble(k, 28, 16)).join("")}${l._fac.length > 4 ? `<b>+${l._fac.length - 4}</b>` : ""}</span>` : ""}${isFav(l.id) ? '<span class="card-saved" title="Saved">♥ Saved</span>' : ""}${l._deal ? `<span class="card-deal">${qrMark(18)}Family card deal</span>` : ""}${l.claimed ? "" : '<span class="unclaimed">Free listing · unclaimed</span>'}</div></button>`;
 }
 
 export function distText(mi) {
@@ -89,6 +89,7 @@ export function directionsMenu(l, label = "Get directions") {
     ["Google Maps", `https://www.google.com/maps/dir/?api=1&destination=${d}`],
     ["Apple Maps", `https://maps.apple.com/?daddr=${d}&dirflg=d`],
     ["Waze", exact ? `https://waze.com/ul?ll=${d}&navigate=yes` : `https://waze.com/ul?q=${d}&navigate=yes`],
+    ["By bus (Google Maps)", `https://www.google.com/maps/dir/?api=1&destination=${d}&travelmode=transit`],
   ];
   return `<details class="dir"><summary class="btn">${esc(label)}</summary><div class="dir-menu" role="menu">
     ${links.map(([n, u]) => `<a role="menuitem" href="${u}" target="_blank" rel="noopener">${n}</a>`).join("")}
@@ -108,6 +109,34 @@ document.addEventListener("click", async e => {
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape") document.querySelectorAll("details.dir[open]").forEach(d => { d.open = false; }); });
 
+
+/* ---------- favourites ("My places"), kept on this device ---------- */
+const favStore = (() => { try { localStorage.setItem("__f", "1"); localStorage.removeItem("__f"); return localStorage; } catch { return null; } })();
+let favMem = [];
+export function favourites() { try { return new Set(JSON.parse(favStore ? favStore.getItem("bf_fav") || "[]" : JSON.stringify(favMem))); } catch { return new Set(); } }
+export function isFav(id) { return favourites().has(String(id)); }
+export function toggleFav(id) {
+  const s = favourites(), k = String(id);
+  s.has(k) ? s.delete(k) : s.add(k);
+  const arr = [...s]; if (favStore) favStore.setItem("bf_fav", JSON.stringify(arr)); else favMem = arr;
+  document.dispatchEvent(new CustomEvent("favchange", { detail: { id: k, on: s.has(k) } }));
+  return s.has(k);
+}
+const HEART_SVG = on => `<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9.3-8.6C1 8.3 2.9 5 6.2 5c2 0 3.3 1 3.8 2.2h4C14.5 6 15.8 5 17.8 5 21.1 5 23 8.3 21.3 11.4 19 15.6 12 20 12 20Z" ${on ? 'fill="#E85D8A"' : 'fill="none" stroke="currentColor" stroke-width="2"'}/></svg>`;
+export function favButton(l) {
+  const on = isFav(l.id);
+  return `<button type="button" class="btn ghost fav-btn${on ? " on" : ""}" data-fav="${esc(l.id)}" aria-pressed="${on}">${HEART_SVG(on)}<span>${on ? "Saved" : "Save"}</span></button>`;
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-fav]"); if (!b) return;
+  const on = toggleFav(b.dataset.fav);
+  document.querySelectorAll(`[data-fav="${CSS.escape(b.dataset.fav)}"]`).forEach(x => { x.classList.toggle("on", on); x.setAttribute("aria-pressed", on); x.innerHTML = `${HEART_SVG(on)}<span>${on ? "Saved" : "Save"}</span>`; });
+});
+export function whatsappButton(l) {
+  const url = new URL(listingUrl(l), location.origin).href;
+  const text = encodeURIComponent(`${l.name}: ${url}`);
+  return `<a class="btn ghost wa-btn" href="https://wa.me/?text=${text}" target="_blank" rel="noopener"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#25D366" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Z"/><path fill="#fff" d="M17.2 14.5c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1l-.9 1.1c-.2.2-.3.2-.6.1a7.8 7.8 0 0 1-3.9-3.4c-.3-.5.3-.5.8-1.6.1-.2 0-.4 0-.5l-.9-2.1c-.2-.5-.5-.5-.7-.5h-.6a1.1 1.1 0 0 0-.8.4 3.4 3.4 0 0 0-1 2.5 5.9 5.9 0 0 0 1.2 3.1 13.4 13.4 0 0 0 5.2 4.6c1.9.8 2.7.9 3.6.7a3.1 3.1 0 0 0 2-1.4 2.5 2.5 0 0 0 .2-1.4c-.1-.1-.3-.2-.6-.3Z"/></svg>WhatsApp</a>`;
+}
 
 /* ---------- family card deal badge (mini QR) ---------- */
 export function qrMark(size = 22, bg = "#FFE7AE") {
@@ -172,7 +201,7 @@ export function openListing(l, { onClaim } = {}) {
         <div><b>Price:</b> ${PRICE[l.price_band] ?? ""}</div>
         ${l.ages?.length ? `<div><b>Ages:</b> ${esc(ageText(l.ages))}</div>` : ""}
         ${l.opening_hours ? `<div><b>Opening hours:</b> ${esc(l.opening_hours)}</div>` : ""}
-        ${l.phone ? `<div><b>Phone:</b> ${phoneHtml(l.phone)}</div>` : ""}
+        ${l.phone ? `<div><b>Phone:</b> ${phoneHtml(l.phone)}</div>` : ""}${l.parking_note ? `<div><b>Parking:</b> ${esc(l.parking_note)}</div>` : ""}
       </div>
       <div class="dw" data-dw></div>
       <div data-fac></div>
@@ -182,6 +211,7 @@ export function openListing(l, { onClaim } = {}) {
         ${web ? `<a class="btn ghost" href="${esc(web)}" target="_blank" rel="noopener">Visit website</a>` : ""}
         ${l.phone && telHref(l.phone) ? `<a class="btn ghost" href="${telHref(l.phone)}">Call</a>` : ""}
         ${reviewsUrl(l) ? `<a class="btn ghost" href="${esc(reviewsUrl(l))}" target="_blank" rel="noopener">Google reviews</a>` : ""}
+        ${favButton(l)}${whatsappButton(l)}
         <button type="button" class="btn ghost" data-share="${esc(listingUrl(l))}" data-title="${esc(l.name)}">Share</button>
       </div>
       ${l.photo_credit ? `<p class="note">${esc(l.photo_credit)}</p>` : ""}

@@ -559,3 +559,17 @@ details.dir[open] > summary::after { transform: translateY(1px) rotate(-135deg);
 .upd-adm-facs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .upd-adm-f { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 3px; border-radius: 999px; background: #E2F4EA; font-size: 13px; font-weight: 700; }
 .upd-adm-f.no { background: #F1EFEA; color: #6B7785; }
+
+/* favourites, WhatsApp, calendar */
+.fav-btn, .wa-btn { display: inline-flex; align-items: center; gap: 8px; }
+.fav-btn.on { border-color: #E85D8A; background: #FCE6EE; }
+.card-saved { display: inline-block; margin-top: 6px; font-size: 12px; font-weight: 800; color: #D2557E; }
+.saved-btn[aria-pressed=true] { background: #E85D8A; border-color: #E85D8A; color: #fff; }
+.saved-btn svg path { fill: #E85D8A; }
+.saved-btn[aria-pressed=true] svg path { fill: #fff; }
+.cal-add { margin-left: auto; }
+.cal-add > summary { font-weight: 700; color: var(--navy); text-decoration: underline; cursor: pointer; }
+.cal-add > summary::after { border-color: currentColor; }
+.cal-add .dir-menu { left: auto; right: 0; min-width: 230px; }
+.ev-meta { flex-wrap: wrap; }
+.cal-add .dir-menu button { border-top: 0; margin-top: 0; border-radius: 10px; }

@@ -215,7 +215,7 @@ async function openEditor(l) {
   $("#e-title").textContent = l ? `Edit ${l.name}` : "Add a listing";
   $("#e-del").hidden = !l;
   const v = l || { category: "outdoors", area: AREAS[0], price_band: 0, ages: [], status: "published" };
-  for (const k of ["name", "description", "address", "postcode", "website", "phone", "opening_hours", "image_url", "photo_credit"]) f.elements[k].value = v[k] || "";
+  for (const k of ["name", "description", "address", "postcode", "website", "phone", "opening_hours", "image_url", "photo_credit", "parking_note"]) f.elements[k].value = v[k] || "";
   f.elements.google_place_id.value = v.google_place_id || ""; f.dataset.hasPid = "google_place_id" in v ? "1" : "";
   f.elements.category.value = v.category; f.elements.area.value = v.area; f.elements.price_band.value = String(v.price_band ?? 0);
   f.querySelectorAll("input[name=ages]").forEach(c => c.checked = (v.ages || []).includes(c.value));
@@ -283,6 +283,7 @@ $("#eform").addEventListener("submit", async e => {
     // only sent once the google_place_id column exists (update-08), so saving never breaks before then
     if (d.google_place_id || f.dataset.hasPid) row.google_place_id = (d.google_place_id || "").trim() || null;
     row.last_checked = d.last_checked || null;
+    row.parking_note = (d.parking_note || "").trim() || null;
     const id = await saveListing(row);
     await saveFacilities(id);
     closeEditor(); await loadAll(); renderListings();
