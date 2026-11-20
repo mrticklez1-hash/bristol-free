@@ -15,7 +15,7 @@ catch { $("#deals").innerHTML = '<div class="empty">Deals are taking a moment to
   if (!DEMO) { try { const c = await sb(); const { data } = await c.auth.getSession(); member = !!data.session; } catch {} }
   $("#deals-cta").innerHTML = member
     ? `<div><b>Your card is ready.</b> <span class="note">Open it at the till and staff will scan it.</span></div><a class="btn" href="/card.html">Show my card</a>`
-    : `<div><b>Get your free family card.</b> <span class="note">It lives on your phone. No app, no cost.</span></div><a class="btn" href="/card.html">Get my card</a>`;
+    : `<div><b>Get your family card.</b> <span class="note">It lives on your phone, no app needed. £5 a month, free while we launch.</span></div><a class="btn" href="/card.html">Get my card</a>`;
 })();
 
 const areas = [...new Set(deals.map(d => d.area))];

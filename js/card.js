@@ -10,7 +10,7 @@ const LOGO = `<img src="/img/logo-mark.svg" width="40" height="40" alt="" style=
 function signInView(msg = "") {
   app.innerHTML = `<div class="card-intro">
     <div>
-      <span class="pill" style="background:var(--mint-band);color:var(--mint-ink)">Free for every family</span>
+      <span class="pill" style="background:var(--mint-band);color:var(--mint-ink)">£5 a month · free while we launch</span>
       <h1>Your family card</h1>
       <p class="lead2">One card on your phone for money off at local family businesses. No app to download and nothing to pay.</p>
       <ul class="ticks"><li>Show it at the till to claim <a href="/deals.html">member deals</a></li><li>The code changes every 30 seconds, so it can't be copied</li><li>Sign in with just your email: no password to remember</li></ul>
