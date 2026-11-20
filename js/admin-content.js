@@ -1,5 +1,6 @@
 // Admin: What's on, Deals, Recipes, Suggestions and Members.
 import { DEMO, AREAS, PRICE } from "./data.js";
+import { compressImage } from "./compress.js";
 import { DEMO_EVENTS, DEMO_DEALS, DEMO_RECIPES } from "./demo-extra.js";
 import { $, esc } from "./ui.js";
 
@@ -311,7 +312,12 @@ $("#cform").addEventListener("submit", async e => {
   btn.disabled = true; btn.textContent = "Saving…";
   try {
     const file = f.elements.file?.files?.[0];
-    if (file) { if (file.size > 5 * 1024 * 1024) throw new Error("Please choose a photo under 5 MB."); row.image_url = await uploadImage(file); }
+    if (file) {
+      if (file.size > 30 * 1024 * 1024) throw new Error("That photo is very large. Please choose one under 30 MB.");
+      const r = await compressImage(file); // shrink before uploading
+      if (r.file.size > 5 * 1024 * 1024) throw new Error("Please choose a photo under 5 MB.");
+      row.image_url = await uploadImage(r.file);
+    }
     await save(table, item?.id, row);
     if (fromSuggestion) await markDone(fromSuggestion);
     close(); await load(table); renderList(table);

@@ -1,4 +1,5 @@
 import { addBasemap } from "./basemap.js";
+import { compressImage, prettySize } from "./compress.js";
 import { DEMO, sb, AREAS, CATS, PRICE, listingUrl } from "./data.js";
 import { DEMO_LISTINGS } from "./demo-data.js";
 import { $, esc, initHeader, readForm } from "./ui.js";
@@ -179,7 +180,7 @@ function setPin(lat, lng, zoom) {
   $("#pin-note").textContent = `Pin placed at ${lat.toFixed(5)}, ${lng.toFixed(5)}. Drag it to adjust.`;
 }
 async function openEditor(l) {
-  editing = l || null; pendingFile = null;
+  editing = l || null; pendingFile = null; $("#e-photo-note").hidden = true;
   const f = $("#eform"); f.reset(); f.querySelector(".err").hidden = true;
   $("#e-title").textContent = l ? `Edit ${l.name}` : "Add a listing";
   $("#e-del").hidden = !l;
@@ -207,10 +208,15 @@ $("#ex").addEventListener("click", closeEditor);
 $("#e-cancel").addEventListener("click", closeEditor);
 $("#emodal").addEventListener("click", e => { if (e.target.id === "emodal") closeEditor(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeEditor(); });
-$("#e-file").addEventListener("change", e => {
-  const file = e.target.files[0]; if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { const er = $("#eform .err"); er.textContent = "Please choose a photo under 5 MB."; er.hidden = false; e.target.value = ""; return; }
-  pendingFile = file; showPreview(URL.createObjectURL(file));
+$("#e-file").addEventListener("change", async e => {
+  const raw = e.target.files[0]; if (!raw) return;
+  const er = $("#eform .err"), note = $("#e-photo-note");
+  if (raw.size > 30 * 1024 * 1024) { er.textContent = "That photo is very large. Please choose one under 30 MB."; er.hidden = false; e.target.value = ""; return; }
+  note.textContent = "Shrinking photo…"; note.hidden = false;
+  const r = await compressImage(raw);
+  if (r.file.size > 5 * 1024 * 1024) { er.textContent = "Please choose a photo under 5 MB."; er.hidden = false; note.hidden = true; e.target.value = ""; return; }
+  pendingFile = r.file; showPreview(URL.createObjectURL(r.file));
+  note.textContent = r.changed ? `Compressed ${prettySize(r.before)} → ${prettySize(r.after)}` : `Photo ready (${prettySize(r.after)})`;
 });
 $("#pc-find").addEventListener("click", async () => {
   const pc = $("#eform").elements.postcode.value.trim(), er = $("#eform .err");
