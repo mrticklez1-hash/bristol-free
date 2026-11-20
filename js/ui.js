@@ -1,5 +1,6 @@
 import { CATS, PRICE, AGES, DEMO, listingUrl, dealIndex, wishCounts, myWishes, toggleWish } from "./data.js";
 import { fillFacilities, facBubble } from "./facilities.js";
+import "./app.js";
 
 export const $ = s => document.querySelector(s);
 export const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));

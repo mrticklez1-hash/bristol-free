@@ -1,0 +1,24 @@
+{
+  "name": "Bristol Free & Affordable",
+  "short_name": "Bristol Free",
+  "description": "Free and affordable things to do with kids in Bristol, local deals and your family card.",
+  "id": "/",
+  "start_url": "/?source=app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBF8F3",
+  "theme_color": "#0F2A44",
+  "lang": "en-GB",
+  "icons": [
+    { "src": "/img/app/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/img/app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/img/app/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/img/app/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "My family card", "short_name": "My card", "url": "/card.html?source=app", "icons": [{ "src": "/img/app/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Things to do", "url": "/directory.html?source=app", "icons": [{ "src": "/img/app/icon-192.png", "sizes": "192x192" }] },
+    { "name": "What's on", "url": "/whats-on.html?source=app", "icons": [{ "src": "/img/app/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
