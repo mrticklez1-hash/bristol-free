@@ -454,3 +454,27 @@ details.dir[open] > summary::after { transform: translateY(1px) rotate(-135deg);
 .int-top li { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); text-transform: capitalize; }
 .int-top li:last-child { border-bottom: 0; }
 .int-top b { color: #2F6FED; }
+
+/* family card deal badge (mini QR) */
+.qrmark { display: block; flex: none; }
+.pin-qr { position: absolute; left: 12px; top: -14px; filter: drop-shadow(0 1px 2px rgba(15,42,68,.35)); pointer-events: none; }
+.pin-qr .qrmark rect:first-child { stroke: #fff; stroke-width: 1.5px; }
+.card-deal { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; padding: 3px 10px 3px 4px; border-radius: 999px; background: #FFE7AE; color: var(--navy); font-size: 12px; font-weight: 800; }
+.deal-panel { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin: 4px 0 14px; border-radius: 16px; background: #FFE7AE; color: var(--navy); text-decoration: none; }
+.deal-panel b { display: block; font-size: 15px; }
+.deal-panel span span { font-size: 14px; color: var(--text-2); }
+.deal-panel:hover { box-shadow: 0 0 0 2px var(--navy) inset; }
+.lp-hero { position: relative; }
+.lp-deal-tag { position: absolute; right: 16px; bottom: 16px; display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px 7px 7px; border-radius: 16px; background: var(--navy); color: #fff; font-weight: 800; font-size: 14px; box-shadow: 0 6px 16px rgba(15,42,68,.25); }
+.lp-dw { margin: 4px 0 16px; }
+
+/* "I'd love a family deal here" */
+.wish { display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 10px 16px; border-radius: 16px; border: 2px dashed #F2A7C0; background: #FFF5F8; color: var(--navy); font: inherit; font-weight: 800; font-size: 15px; cursor: pointer; }
+.wish:hover { border-style: solid; }
+.wish.on { border: 2px solid #E85D8A; background: #FCE6EE; }
+.wish:disabled { opacity: .7; cursor: progress; }
+.wish-line { margin: 8px 0 14px; font-size: 13px; color: var(--text-2); line-height: 1.45; }
+.wish-line b { color: var(--navy); font-size: 14px; }
+.pin-qr.cl { left: 26px; top: -8px; }
+.lp-hero .lp-deal-tag .qrmark { position: static; width: 30px; height: 30px; }
+.card-deal { width: fit-content; align-self: flex-start; }

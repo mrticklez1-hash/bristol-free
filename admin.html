@@ -57,6 +57,7 @@
         <button type="button" role="tab" data-tab="r" aria-selected="false">Claims <span id="rcount"></span></button>
         <button type="button" role="tab" data-tab="m" aria-selected="false">Members <span id="mcount"></span></button>
         <button type="button" role="tab" data-tab="i" aria-selected="false">Waiting list <span id="icount"></span></button>
+        <button type="button" role="tab" data-tab="w" aria-selected="false">Deal wishes <span id="wcount"></span></button>
       </div>
       <button class="btn ghost" id="logout">Sign out</button>
     </div>
@@ -92,6 +93,11 @@
         <div id="list-invites" class="adm-list"></div>
       </div>
       <p class="note" style="margin:18px 0 10px">Families with a card. Pausing a card makes it show "paused" when a business scans it. "Make lifetime" gives that card a free lifetime upgrade.</p><div id="list-members" class="adm-list"></div></div>
+    <div id="pane-w" hidden>
+      <p class="note" style="margin-bottom:12px">Places parents have tapped "I'd love a family deal here" on. Card holders are signed-in families; the rest are one per device. Use these numbers when you ask a business to add a deal.</p>
+      <div id="wish-summary"></div>
+      <div id="list-wishes" class="adm-list"></div>
+    </div>
     <div id="pane-i" hidden>
       <p class="note" style="margin-bottom:12px">People who joined the family card waiting list at <b>/join</b>. Share <b>/join?src=fb</b> in the group to see how many came from fb.</p>
       <div id="int-summary"></div>
@@ -161,5 +167,6 @@
 <script type="module" src="/js/admin.js"></script>
 <script type="module" src="/js/admin-content.js"></script>
 <script type="module" src="/js/admin-interest.js"></script>
+<script type="module" src="/js/admin-wishes.js"></script>
 </body>
 </html>

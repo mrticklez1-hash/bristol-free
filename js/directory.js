@@ -1,6 +1,6 @@
 import { addBasemap } from "./basemap.js";
-import { fetchListings, AREAS, CATS, PRICE } from "./data.js";
-import { $, card, initHeader, openListing, wireModal, esc } from "./ui.js";
+import { fetchListings, AREAS, CATS, PRICE, dealIndex } from "./data.js";
+import { $, card, initHeader, openListing, wireModal, esc, qrMark } from "./ui.js";
 import { handleClaim } from "./claim.js";
 
 initHeader();
@@ -35,7 +35,15 @@ async function initMap() {
     await loadLeaflet();
     map = L.map("map", { scrollWheelZoom: false, maxZoom: 19 }).setView([51.47, -2.6], 10);
     addBasemap(map);
-    cluster = L.markerClusterGroup ? L.markerClusterGroup({ showCoverageOnHover: false, maxClusterRadius: 45 }) : L.layerGroup();
+    cluster = L.markerClusterGroup ? L.markerClusterGroup({
+      showCoverageOnHover: false, maxClusterRadius: 45,
+      // same look as before, plus the mini QR when any place inside has a family card deal
+      iconCreateFunction: cl => {
+        const n = cl.getChildCount(), size = n < 10 ? "small" : n < 100 ? "medium" : "large";
+        const deal = cl.getAllChildMarkers().some(m => m.options.deal);
+        return L.divIcon({ html: `<div><span>${n}</span></div>${deal ? `<span class="pin-qr cl" title="Includes a family card deal">${qrMark(16)}</span>` : ""}`, className: `marker-cluster marker-cluster-${size}`, iconSize: L.point(40, 40) });
+      },
+    }) : L.layerGroup();
     map.addLayer(cluster);
   } catch (e) {
     $("#map").innerHTML = '<div class="empty" style="height:100%;display:grid;place-items:center">The map couldn\'t load. The list below still works.</div>';
@@ -49,8 +57,8 @@ function renderMap(list) {
   list.forEach(l => {
     if (typeof l.lat !== "number" || typeof l.lng !== "number") return;
     const m = L.marker([l.lat, l.lng], {
-      icon: L.divIcon({ className: "", html: `<div class="pin" style="background:${pinColour(l)}"></div>`, iconSize: [22, 22], iconAnchor: [11, 11] }),
-      title: l.name, alt: l.name, keyboard: true,
+      icon: L.divIcon({ className: "", html: `<div class="pin" style="background:${pinColour(l)}"></div>${l._deal ? `<span class="pin-qr" title="Family card deal">${qrMark(16)}</span>` : ""}`, iconSize: [22, 22], iconAnchor: [11, 11] }),
+      title: l.name, alt: l.name, keyboard: true, deal: !!l._deal,
     });
     const el = document.createElement("div");
     el.className = "pop";
@@ -135,6 +143,7 @@ nearBtn.addEventListener("click", () => {
 });
 
 renderChips();
-const [, data] = await Promise.all([initMap(), fetchListings().catch(() => null)]);
+const [, data, findDeal] = await Promise.all([initMap(), fetchListings().catch(() => null), dealIndex()]);
+if (data) data.forEach(l => { l._deal = !!findDeal(l); });
 if (!data) { $("#results").innerHTML = '<div class="empty">Listings are taking a moment to load. Please refresh.</div>'; }
 else { all = data; render(); }

@@ -122,6 +122,55 @@ export async function fetchRecipe(slug) {
   return data;
 }
 
+/* ---------- family card deals per listing (for the QR badge) ---------- */
+let dealsP = null;
+export function dealIndex() {
+  dealsP = dealsP || fetchDeals().catch(() => []);
+  return dealsP.then(deals => {
+    const byId = new Map(), byName = new Map();
+    for (const d of deals) {
+      if (d.listing_id) byId.set(String(d.listing_id), d);
+      if (d.business_name) byName.set(d.business_name.trim().toLowerCase(), d);
+    }
+    return l => (l && (byId.get(String(l.id)) || byName.get(String(l.name || "").trim().toLowerCase()))) || null;
+  });
+}
+
+/* ---------- "I'd love a family deal here" wishes ---------- */
+const store = (() => { try { const k = "__t"; localStorage.setItem(k, k); localStorage.removeItem(k); return localStorage; } catch { return null; } })();
+const mem = {};
+const get = k => (store ? store.getItem(k) : mem[k]) || null;
+const put = (k, v) => { if (store) store.setItem(k, v); else mem[k] = v; };
+function deviceId() {
+  let d = get("bf_device");
+  if (!d) { const a = new Uint8Array(12); crypto.getRandomValues(a); d = [...a].map(b => b.toString(16).padStart(2, "0")).join(""); put("bf_device", d); }
+  return d;
+}
+export function myWishes() { try { return new Set(JSON.parse(get("bf_wished") || "[]")); } catch { return new Set(); } }
+function saveWishes(set) { put("bf_wished", JSON.stringify([...set])); }
+let countsP = null;
+const DEMO_COUNTS = new Map();
+export function wishCounts() {
+  if (DEMO) return Promise.resolve(DEMO_COUNTS);
+  countsP = countsP || sb().then(c => c.rpc("wish_counts")).then(({ data }) => new Map((data || []).map(r => [String(r.listing_id), r.n]))).catch(() => new Map());
+  return countsP;
+}
+export async function toggleWish(listingId) {
+  const id = String(listingId), mine = myWishes();
+  if (DEMO) {
+    const was = mine.has(id), base = DEMO_COUNTS.get(id) ?? 22;
+    was ? mine.delete(id) : mine.add(id); saveWishes(mine);
+    DEMO_COUNTS.set(id, base + (was ? -1 : 1));
+    return { ok: true, wished: !was, n: DEMO_COUNTS.get(id) };
+  }
+  const c = await sb();
+  const { data, error } = await c.rpc("toggle_wish", { p_listing: id, p_device: deviceId() });
+  if (error || !data?.ok) return { ok: false, reason: data?.reason || "error" };
+  data.wished ? mine.add(id) : mine.delete(id); saveWishes(mine);
+  const counts = await wishCounts(); counts.set(id, data.n);
+  return data;
+}
+
 export async function submitInterest(row) {
   if (DEMO) { await new Promise(r => setTimeout(r, 400)); return { demo: true }; }
   const c = await sb();

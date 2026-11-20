@@ -1,6 +1,6 @@
 import { addBasemap } from "./basemap.js";
-import { fetchListing, fetchListings, CATS, PRICE, slugify, listingUrl } from "./data.js";
-import { $, esc, icon, scene, card, initHeader, wireModal, openListing, ageText, safeUrl, share, telHref, phoneHtml, reviewsUrl, directionsMenu } from "./ui.js";
+import { fetchListing, fetchListings, CATS, PRICE, slugify, listingUrl, dealIndex } from "./data.js";
+import { $, esc, icon, scene, card, initHeader, wireModal, openListing, ageText, safeUrl, share, telHref, phoneHtml, reviewsUrl, directionsMenu, fillDealOrWish, qrMark } from "./ui.js";
 import { handleClaim } from "./claim.js";
 
 initHeader();
@@ -68,6 +68,7 @@ async function start() {
       <span class="sub" style="font-weight:700;color:#1C5C8C;display:block;margin-top:18px">${esc(c.n)} · ${esc(l.area)}</span>
       <h1 class="lp-title">${esc(l.name)}</h1>
       ${l.description ? `<p class="lp-desc">${esc(l.description)}</p>` : ""}
+      <div class="dw lp-dw" id="lp-dw"></div>
       <div class="lp-actions">
         ${directionsMenu(l)}
         ${web ? `<a class="btn ghost" href="${esc(web)}" target="_blank" rel="noopener">Visit website</a>` : ""}
@@ -98,6 +99,8 @@ async function start() {
   </section>`;
 
   $("#lp-share").addEventListener("click", e => share(e.currentTarget));
+  fillDealOrWish($("#lp-dw"), l);
+  dealIndex().then(find => { if (find(l)) $(".lp-hero")?.insertAdjacentHTML("beforeend", `<span class="lp-deal-tag">${qrMark(30, "#FFE7AE")}Family card deal</span>`); });
 
   if (!l.claimed) {
     const box = document.createElement("div");
@@ -112,7 +115,8 @@ async function start() {
 
   // nearby: closest published listings, falling back to the same area
   try {
-    const all = (await fetchListings()).filter(x => x.id !== l.id);
+    const [list, findDeal] = await Promise.all([fetchListings(), dealIndex()]);
+    const all = list.filter(x => x.id !== l.id); all.forEach(x => { x._deal = !!findDeal(x); });
     let near = hasPin
       ? all.filter(x => typeof x.lat === "number").map(x => ({ x, d: km(l, x) })).sort((a, b) => a.d - b.d).slice(0, 4).map(o => o.x)
       : all.filter(x => x.area === l.area).slice(0, 4);

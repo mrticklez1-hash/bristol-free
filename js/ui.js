@@ -1,4 +1,4 @@
-import { CATS, PRICE, AGES, DEMO, listingUrl } from "./data.js";
+import { CATS, PRICE, AGES, DEMO, listingUrl, dealIndex, wishCounts, myWishes, toggleWish } from "./data.js";
 
 export const $ = s => document.querySelector(s);
 export const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
@@ -34,7 +34,7 @@ export function thumb(l) {
 
 export function card(l) {
   const c = CATS[l.category] || CATS.play;
-  return `<button class="card" data-id="${esc(l.id)}">${thumb(l)}<div class="body"><h3>${esc(l.name)}</h3><span class="sub">${esc(l.area)} · ${c.n}</span>${typeof l._dist === "number" ? `<span class="dist">${distText(l._dist)}${!l.address && !l.postcode ? " · area they cover" : ""}</span>` : ""}${l.claimed ? "" : '<span class="unclaimed">Free listing · unclaimed</span>'}</div></button>`;
+  return `<button class="card" data-id="${esc(l.id)}">${thumb(l)}<div class="body"><h3>${esc(l.name)}</h3><span class="sub">${esc(l.area)} · ${c.n}</span>${typeof l._dist === "number" ? `<span class="dist">${distText(l._dist)}${!l.address && !l.postcode ? " · area they cover" : ""}</span>` : ""}${l._deal ? `<span class="card-deal">${qrMark(18)}Family card deal</span>` : ""}${l.claimed ? "" : '<span class="unclaimed">Free listing · unclaimed</span>'}</div></button>`;
 }
 
 export function distText(mi) {
@@ -107,6 +107,53 @@ document.addEventListener("click", async e => {
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape") document.querySelectorAll("details.dir[open]").forEach(d => { d.open = false; }); });
 
+
+/* ---------- family card deal badge (mini QR) ---------- */
+export function qrMark(size = 22, bg = "#FFE7AE") {
+  const u = size / 9, f = (x, y) => `<rect x="${(1 + x) * u}" y="${(1 + y) * u}" width="${u * 2.5}" height="${u * 2.5}" rx="${u * .5}" fill="none" stroke="#0F2A44" stroke-width="${u * .7}"/>`;
+  const d = [[5, 5], [6, 6], [4.6, 6.3], [6.3, 4.6]].map(([x, y]) => `<rect x="${(1 + x - .5) * u}" y="${(1 + y - .5) * u}" width="${u * .9}" height="${u * .9}" fill="#0F2A44"/>`).join("");
+  return `<svg class="qrmark" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><rect width="${size}" height="${size}" rx="${u * 1.6}" fill="${bg}"/>${f(0, 0)}${f(4.5, 0)}${f(0, 4.5)}${d}</svg>`;
+}
+export function dealPanel(d) {
+  return `<a class="deal-panel" href="/deals.html">${qrMark(34, "#fff")}<span><b>Family card deal</b><span>${esc(d.offer)}${d.members_only ? ". Show your card." : ""}</span></span></a>`;
+}
+
+/* ---------- "I'd love a family deal here" ---------- */
+const HEART = filled => `<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9.3-8.6C1 8.3 2.9 5 6.2 5c2 0 3.3 1 3.8 2.2h4C14.5 6 15.8 5 17.8 5 21.1 5 23 8.3 21.3 11.4 19 15.6 12 20 12 20Z" ${filled ? 'fill="#E85D8A"' : 'fill="none" stroke="currentColor" stroke-width="2"'}/></svg>`;
+function wishCountLine(n, wished) {
+  if (wished && n >= 5) return `You and ${n - 1} other local families would love a deal here`;
+  if (!wished && n >= 5) return `${n} local families would love a deal here`;
+  return "";
+}
+function wishHtml(l, n, wished) {
+  const line = wishCountLine(n, wished);
+  return `<button type="button" class="wish${wished ? " on" : ""}" data-wish="${esc(l.id)}" aria-pressed="${wished}">${HEART(wished)}<span>${wished ? "You'd love a deal here" : "I'd love a family deal here"}</span></button>
+    <p class="wish-line" aria-live="polite">${line ? `<b>${line}</b><br>` : ""}We'll show the business how many local families want a deal. No sign-up needed.</p>`;
+}
+// Fills a <div data-dw> with the deal panel, or the wish button if there's no deal yet
+export async function fillDealOrWish(el, l) {
+  if (!el || !l?.id) return;
+  const [find, counts] = await Promise.all([dealIndex(), wishCounts()]);
+  const d = find(l);
+  if (d) { el.innerHTML = dealPanel(d); return; }
+  const wished = myWishes().has(String(l.id));
+  el.innerHTML = wishHtml(l, counts.get(String(l.id)) || 0, wished);
+  bindWish(el, l);
+}
+function bindWish(el, l) {
+  el.querySelector("[data-wish]")?.addEventListener("click", async e => {
+    const b = e.currentTarget; b.disabled = true;
+    const r = await toggleWish(l.id);
+    if (!r.ok) {
+      b.disabled = false;
+      el.querySelector(".wish-line").textContent = r.reason === "busy" ? "Lots of wishes here today already! Please try again tomorrow." : "That didn't save. Please try again.";
+      return;
+    }
+    el.innerHTML = wishHtml(l, r.n, r.wished);
+    bindWish(el, l);
+  });
+}
+
 /* ---------- listing modal + claim form ---------- */
 let lastFocus = null;
 export function openListing(l, { onClaim } = {}) {
@@ -126,6 +173,7 @@ export function openListing(l, { onClaim } = {}) {
         ${l.opening_hours ? `<div><b>Opening hours:</b> ${esc(l.opening_hours)}</div>` : ""}
         ${l.phone ? `<div><b>Phone:</b> ${phoneHtml(l.phone)}</div>` : ""}
       </div>
+      <div class="dw" data-dw></div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <a class="btn" href="${listingUrl(l)}">View full page</a>
         ${directionsMenu(l, "Directions")}
@@ -138,6 +186,7 @@ export function openListing(l, { onClaim } = {}) {
       ${l.claimed ? "" : claimBlock(l)}
     </div>`;
   const m = $("#modal");
+  fillDealOrWish(m.querySelector("[data-dw]"), l);
   m.classList.add("on");
   m.querySelector(".x").addEventListener("click", closeListing);
   m.querySelector(".x").focus();
