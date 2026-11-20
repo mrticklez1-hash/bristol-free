@@ -76,7 +76,7 @@ body.over .links a.cardlink{border-color:rgba(255,255,255,.5)}
 .hero .lead{font-size:18px;color:#E6EEF6;max-width:480px}
 .finder{background:#fff;border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
 .finder .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-@media(max-width:700px){.hero-card{padding:120px 0 48px;min-height:0;background-image:linear-gradient(180deg,rgba(10,28,46,.55) 0%,rgba(10,28,46,.85) 60%),url(../img/hero.jpg)}}
+@media(max-width:700px){.hero-card{padding:120px 0 48px;min-height:0;background-image:linear-gradient(180deg,rgba(10,28,46,.55) 0%,rgba(10,28,46,.85) 60%),url(../img/hero-sm.jpg);background-position:68% center}}
 body.over header.site{background:transparent;backdrop-filter:none;border-color:transparent}
 body.over .logo b,body.over .links a:not(.cta){color:#fff}
 body.over .logo small{color:#D5E3F0}
