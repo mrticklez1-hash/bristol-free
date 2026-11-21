@@ -1,4 +1,5 @@
-import { submitSuggestion, AREAS } from "./data.js";
+import { submitSuggestion, uploadSuggestionPhoto, AREAS } from "./data.js";
+import { compressImage } from "./compress.js";
 import { $, esc, readForm, validEmail } from "./ui.js";
 
 // Public "suggest an event" / "offer a deal" form. Goes to admin > Suggestions; nothing is published automatically.
@@ -19,7 +20,9 @@ const FORMS = {
       </div>
       <label class="field">Price<input name="price" maxlength="120" placeholder="e.g. Free, or £3 per child"></label>
       <label class="field">Link for more info (optional)<input name="website" maxlength="300" placeholder="https://…"></label>
-      <label class="field">Anything else? (optional)<textarea name="details" rows="3" maxlength="1500"></textarea></label>`,
+      <label class="field">Anything else? (optional)<textarea name="details" rows="3" maxlength="1500"></textarea></label>
+      <label class="field">Photo (optional)<input type="file" name="photo" accept="image/jpeg,image/png,image/webp"><span class="note" style="font-weight:400;display:block;margin-top:6px">A photo helps your event stand out. We check every photo before it goes on the site.</span></label>
+      <label class="check sg-photo-ok" hidden><input type="checkbox" name="photo_ok"> I took this photo, or I have permission to share it</label>`,
     check: d => !d.title ? "Please add the event name." : !d.date ? "Please add the date." : "",
   },
   deal: {
@@ -57,16 +60,27 @@ export function openSuggest(kind) {
   document.addEventListener("keydown", function k(e) { if (e.key === "Escape") { close(); document.removeEventListener("keydown", k); } });
   const f = $("#sg-form");
   f.querySelector("input:not(.hp)").focus();
+  const photoIn = f.elements.photo, okRow = f.querySelector(".sg-photo-ok");
+  photoIn?.addEventListener("change", () => { okRow.hidden = !photoIn.files.length; });
   f.addEventListener("submit", async e => {
     e.preventDefault();
     const d = readForm(f), err = f.querySelector(".err"), btn = f.querySelector("button.btn");
     if (d.website_hp) return;
     const problem = F.check(d) || (!d.contact_name ? "Please add your name." : !validEmail(d.email) ? "Please add a valid email address." : "");
     if (problem) { err.textContent = problem; err.hidden = false; return; }
-    const { contact_name, email, website_hp, ...data } = d;
+    const file = photoIn?.files?.[0];
+    if (file && !f.elements.photo_ok.checked) { err.textContent = "Please tick the box to confirm you can share this photo, or remove the photo."; err.hidden = false; return; }
+    if (file && file.size > 30 * 1024 * 1024) { err.textContent = "That photo is very large. Please choose one under 30 MB."; err.hidden = false; return; }
+    const { contact_name, email, website_hp, photo, photo_ok, ...data } = d;
     if (kind === "event") data.weekly = !!f.elements.weekly.checked;
     err.hidden = true; btn.disabled = true; btn.textContent = "Sending…";
     try {
+      if (file) {
+        btn.textContent = "Sending photo…";
+        const { file: small } = await compressImage(file);
+        data.photo = await uploadSuggestionPhoto(small);
+        btn.textContent = "Sending…";
+      }
       const r = await submitSuggestion(kind, data, contact_name, email);
       f.innerHTML = `<h2 id="m-title">Thank you!</h2><div class="ok" role="status">We've got it, ${esc(contact_name)}. We'll check the details and add it to the site.${r.demo ? " (Demo mode: nothing was sent.)" : ""}</div><button type="button" class="btn ghost" id="sg-done">Close</button>`;
       $("#sg-done").addEventListener("click", close);

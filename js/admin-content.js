@@ -218,11 +218,24 @@ function renderSugg() {
   $("#scount").textContent = open ? `(${open})` : "";
   $("#list-sugg").innerHTML = s.length ? s.map(x => {
     const d = x.data || {}, title = x.kind === "event" ? d.title : `${d.business}: ${d.offer}`;
-    const rest = Object.entries(d).filter(([k]) => !["title", "business", "offer"].includes(k) && d[k] !== "" && d[k] !== false).map(([k, v]) => `${k}: ${v === true ? "yes" : v}`).join("\n");
+    const rest = Object.entries(d).filter(([k]) => !["title", "business", "offer", "photo"].includes(k) && d[k] !== "" && d[k] !== false).map(([k, v]) => `${k}: ${v === true ? "yes" : v}`).join("\n");
     return `<div class="adm-row ${x.status === "done" ? "past" : ""}"><div class="grow"><b>${x.kind === "event" ? "Event" : "Deal"} · ${esc(title)}</b>
-      <span class="sub">From ${esc(x.contact_name)} · <a href="mailto:${esc(x.email)}">${esc(x.email)}</a> · ${new Date(x.created_at).toLocaleDateString("en-GB")}</span><pre>${esc(rest)}</pre></div>
+      <span class="sub">From ${esc(x.contact_name)} · <a href="mailto:${esc(x.email)}">${esc(x.email)}</a> · ${new Date(x.created_at).toLocaleDateString("en-GB")}</span><pre>${esc(rest)}</pre>${d.photo ? `<img class="sugg-photo" data-sphoto="${esc(d.photo)}" alt="Photo sent with this suggestion">` : ""}</div>
       ${x.status === "new" ? `<button class="btn" data-use="${esc(x.id)}">Add as ${x.kind}</button><button class="btn ghost" data-sdone="${esc(x.id)}">Mark done</button>` : '<span class="badge">Done</span>'}</div>`;
   }).join("") : '<div class="empty">No suggestions yet. The "Suggest an event" and "Offer a deal" forms send them here.</div>';
+  // photos sent with suggestions are private: show them through short-lived links
+  $("#list-sugg").querySelectorAll("[data-sphoto]").forEach(async img => {
+    if (DEMO) { img.src = "/img/art.jpg"; return; }
+    const { data } = await client.storage.from("suggestion-photos").createSignedUrl(img.dataset.sphoto, 3600);
+    if (data?.signedUrl) img.src = data.signedUrl; else img.remove();
+  });
+}
+// Copies a suggestion's private photo into the public photos, so it can go on the site
+async function copySuggestionPhoto(path) {
+  if (DEMO) return "/img/art.jpg";
+  const { data, error } = await client.storage.from("suggestion-photos").download(path);
+  if (error || !data) throw error || new Error("no photo");
+  return uploadImage(new File([data], path.split("/").pop(), { type: data.type || "image/jpeg" }));
 }
 function renderMembers() {
   const m = store.members;
@@ -348,7 +361,9 @@ document.addEventListener("click", async e => {
   const u = e.target.closest("[data-use]");
   if (u) {
     const s = store.suggestions.find(x => x.id === u.dataset.use), d = s.data || {};
-    if (s.kind === "event") openEditor("events", { title: d.title, date: d.date, time: d.time, venue: d.venue, area: d.area, price_band: !d.price || /free/i.test(d.price) ? 0 : 1, price_note: d.price && !/^free$/i.test(d.price) ? d.price : "", website: d.website, description: d.details, status: "draft" }, s.id);
+    let image_url = "";
+    if (d.photo) { u.disabled = true; u.textContent = "Copying photo…"; try { image_url = await copySuggestionPhoto(d.photo); } catch { alert("Couldn't copy their photo. You can add one in the editor."); } u.disabled = false; u.textContent = `Add as ${s.kind}`; }
+    if (s.kind === "event") openEditor("events", { image_url, title: d.title, date: d.date, time: d.time, venue: d.venue, area: d.area, price_band: !d.price || /free/i.test(d.price) ? 0 : 1, price_note: d.price && !/^free$/i.test(d.price) ? d.price : "", website: d.website, description: d.details, status: "draft" }, s.id);
     else openEditor("deals", { business_name: d.business, area: d.area, offer: d.offer, details: d.details, website: d.website, members_only: true, status: "draft" }, s.id);
     if (s.kind === "event" && d.weekly) showErr("They said this happens every week: set 'Repeats weekly until'.");
     return;

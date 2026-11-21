@@ -212,6 +212,17 @@ export async function submitInterest(row) {
   return {};
 }
 
+// A photo sent with a suggestion goes into the private "suggestion-photos" storage; only admins can see it.
+export async function uploadSuggestionPhoto(file) {
+  if (DEMO) { await new Promise(r => setTimeout(r, 300)); return "pending/demo.jpg"; }
+  const c = await sb();
+  const ext = file.type === "image/webp" ? "webp" : file.type === "image/png" ? "png" : "jpg";
+  const path = `pending/${crypto.randomUUID()}.${ext}`;
+  const { error } = await c.storage.from("suggestion-photos").upload(path, file, { contentType: file.type, upsert: false });
+  if (error) throw error;
+  return path;
+}
+
 export async function submitSuggestion(kind, data, contact_name, email) {
   if (DEMO) { await new Promise(r => setTimeout(r, 400)); return { demo: true }; }
   const c = await sb();

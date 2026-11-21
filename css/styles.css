@@ -614,3 +614,4 @@ p.app-steps { padding-left: 12px; }
   .ev-date b { font-size: 18px; }
   .ev-date span { font-size: 10px; }
 }
+.sugg-photo { display: block; max-width: 220px; max-height: 160px; border-radius: 12px; margin-top: 8px; object-fit: cover; }
