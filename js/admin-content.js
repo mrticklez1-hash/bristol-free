@@ -218,7 +218,7 @@ function renderSugg() {
   $("#scount").textContent = open ? `(${open})` : "";
   $("#list-sugg").innerHTML = s.length ? s.map(x => {
     const d = x.data || {}, title = x.kind === "event" ? d.title : `${d.business}: ${d.offer}`;
-    const rest = Object.entries(d).filter(([k]) => !["title", "business", "offer", "photo"].includes(k) && d[k] !== "" && d[k] !== false).map(([k, v]) => `${k}: ${v === true ? "yes" : v}`).join("\n");
+    const rest = Object.entries(d).filter(([k]) => !["title", "business", "offer", "photo", "photo_removed"].includes(k) && d[k] !== "" && d[k] !== false).map(([k, v]) => `${k}: ${v === true ? "yes" : v}`).join("\n");
     return `<div class="adm-row ${x.status === "done" ? "past" : ""}"><div class="grow"><b>${x.kind === "event" ? "Event" : "Deal"} · ${esc(title)}</b>
       <span class="sub">From ${esc(x.contact_name)} · <a href="mailto:${esc(x.email)}">${esc(x.email)}</a> · ${new Date(x.created_at).toLocaleDateString("en-GB")}</span><pre>${esc(rest)}</pre>${d.photo ? `<img class="sugg-photo" data-sphoto="${esc(d.photo)}" alt="Photo sent with this suggestion">` : ""}</div>
       ${x.status === "new" ? `<button class="btn" data-use="${esc(x.id)}">Add as ${x.kind}</button><button class="btn ghost" data-sdone="${esc(x.id)}">Mark done</button>` : '<span class="badge">Done</span>'}</div>`;
@@ -340,8 +340,14 @@ $("#cform").addEventListener("submit", async e => {
 });
 
 async function markDone(id) {
+  const sg = store.suggestions.find(x => x.id === id);
   if (!DEMO) { const { error } = await client.from("suggestions").update({ status: "done" }).eq("id", id); if (error) throw error; }
-  store.suggestions.find(x => x.id === id).status = "done"; renderSugg();
+  // finished with it: tidy away the private photo (if it was used, a copy is already in the public photos)
+  if (sg.data?.photo && !DEMO) {
+    const { error } = await client.storage.from("suggestion-photos").remove([sg.data.photo]);
+    if (!error) { const data = { ...sg.data, photo_removed: true }; delete data.photo; await client.from("suggestions").update({ data }).eq("id", id); sg.data = data; }
+  }
+  sg.status = "done"; renderSugg();
 }
 async function setMember(id, status) {
   if (!DEMO) { const { error } = await client.from("members").update({ status }).eq("user_id", id); if (error) return alert("Couldn't change that card."); }
