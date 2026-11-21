@@ -102,7 +102,7 @@ export async function fetchEvents() {
   const c = await sb();
   const since = new Date(Date.now() - 86400000).toISOString();
   const { data, error } = await c.from("events")
-    .select("*, listing:listings(name, slug, area)")
+    .select("*, listing:listings(name, slug, area, image_url)")
     .eq("status", "published")
     .or(`starts_at.gte.${since},repeat_until.gte.${since.slice(0, 10)}`)
     .order("starts_at");

@@ -40,10 +40,11 @@ const TYPES = {
       <div class="claim-two"><label class="field">Price<select name="price_band">${priceOptions()}</select></label><label class="field">Price details (optional)<input name="price_note" maxlength="120" placeholder="e.g. £3 per child, under-2s free"></label></div>
       <fieldset class="field"><legend>Ages</legend><div class="chips" style="gap:12px">${ageBoxes()}</div></fieldset>
       <label class="field">Description<textarea name="description" rows="3" maxlength="2000"></textarea></label>
-      <label class="field">Link for more info<input name="website" maxlength="300" placeholder="https://…"></label>`,
+      <label class="field">Link for more info<input name="website" maxlength="300" placeholder="https://…"></label>
+      <div class="claim-two"><label class="field">Photo <span class="sub">(optional; otherwise the linked listing's photo is used)</span><input type="file" name="file" accept="image/jpeg,image/png,image/webp"></label><label class="field">…or photo link<input name="image_url" maxlength="500"></label></div>`,
     fill: (f, v) => {
       const at = v.starts_at ? new Date(v.starts_at) : null, end = v.ends_at ? new Date(v.ends_at) : null;
-      set(f, { title: v.title, listing_id: v.listing_id || "", area: v.area || AREAS[0], venue: v.venue, date: at ? localDate(at) : v.date || "", start: at ? localTime(at) : v.time || "", end: end ? localTime(end) : "", repeat_until: v.repeat_until || "", price_band: String(v.price_band ?? 0), price_note: v.price_note, description: v.description, website: v.website });
+      set(f, { title: v.title, listing_id: v.listing_id || "", area: v.area || AREAS[0], venue: v.venue, date: at ? localDate(at) : v.date || "", start: at ? localTime(at) : v.time || "", end: end ? localTime(end) : "", repeat_until: v.repeat_until || "", price_band: String(v.price_band ?? 0), price_note: v.price_note, description: v.description, website: v.website, image_url: v.image_url });
       f.querySelectorAll("input[name=ages]").forEach(c => c.checked = (v.ages || []).includes(c.value));
     },
     read: (f, d) => {
@@ -52,7 +53,7 @@ const TYPES = {
       const starts = new Date(`${d.date}T${d.start || "00:00"}`), ends = d.end ? new Date(`${d.date}T${d.end}`) : null;
       if (ends && ends < starts) return "The end time is before the start time.";
       if (d.repeat_until && d.repeat_until < d.date) return "'Repeats weekly until' is before the first date.";
-      return { title: d.title, listing_id: d.listing_id || null, area: d.area, venue: d.venue || null, starts_at: starts.toISOString(), ends_at: ends ? ends.toISOString() : null, repeat_until: d.repeat_until || null, price_band: +d.price_band, price_note: d.price_note || null, ages: [...f.querySelectorAll("input[name=ages]:checked")].map(c => c.value), description: d.description || null, website: fixUrl(d.website) };
+      return { title: d.title, listing_id: d.listing_id || null, area: d.area, venue: d.venue || null, starts_at: starts.toISOString(), ends_at: ends ? ends.toISOString() : null, repeat_until: d.repeat_until || null, price_band: +d.price_band, price_note: d.price_note || null, ages: [...f.querySelectorAll("input[name=ages]:checked")].map(c => c.value), description: d.description || null, website: fixUrl(d.website), image_url: d.image_url || null };
     },
     row: v => {
       const past = new Date(v.repeat_until ? v.repeat_until + "T23:59" : v.ends_at || v.starts_at) < new Date();

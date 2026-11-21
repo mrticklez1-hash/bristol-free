@@ -600,3 +600,17 @@ p.app-steps { padding-left: 12px; }
 .e-xcats b{display:block;font-size:13px;margin-bottom:4px}
 .e-xcats .chips{gap:6px 14px}
 #e-xcats-wrap > summary{cursor:pointer;font-weight:700;color:var(--navy)}
+
+/* photos on What's on events: photo, then date, then details */
+.ev-img { flex: none; width: 128px; height: 128px; border-radius: 16px; overflow: hidden; display: grid; place-items: center; }
+.ev-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ev-media { flex: none; display: flex; gap: 16px; align-items: flex-start; }
+/* phones: the date sits on the corner of the photo, so the details get the width */
+@media (max-width: 600px) {
+  .ev { gap: 14px; padding: 12px; }
+  .ev-media { position: relative; }
+  .ev-img { width: 96px; height: 96px; border-radius: 14px; }
+  .ev-media .ev-date { position: absolute; left: -6px; top: -6px; width: 44px; height: 48px; border-radius: 12px; box-shadow: 0 0 0 3px #fff; }
+  .ev-date b { font-size: 18px; }
+  .ev-date span { font-size: 10px; }
+}
