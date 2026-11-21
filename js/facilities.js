@@ -1,4 +1,4 @@
-// Facilities: the 15 icons, loading confirmed answers, the peach box, and the
+// Facilities: the 17 icons, loading confirmed answers, the peach box, and the
 // "Update info or facilities" form. A facility with no row is unknown and shows nothing.
 import { DEMO, sb } from "./data.js";
 
@@ -18,6 +18,8 @@ export const FACILITIES = [
   { key: "dog_friendly", label: "Dog-friendly", bg: "#FDE8DC", svg: "<ellipse cx=\"12\" cy=\"16.3\" rx=\"4.6\" ry=\"3.7\" fill=\"#0F2A44\" stroke=\"none\"/><circle cx=\"5.6\" cy=\"10.6\" r=\"2.2\" fill=\"#0F2A44\" stroke=\"none\"/><circle cx=\"9.5\" cy=\"6.2\" r=\"2.2\" fill=\"#0F2A44\" stroke=\"none\"/><circle cx=\"14.5\" cy=\"6.2\" r=\"2.2\" fill=\"#0F2A44\" stroke=\"none\"/><circle cx=\"18.4\" cy=\"10.6\" r=\"2.2\" fill=\"#0F2A44\" stroke=\"none\"/>" },
   { key: "feeding", label: "Feeding-friendly space", bg: "#FCE6EE", svg: "<path d=\"M12 20s-7.5-4.4-7.5-9.7A4 4 0 0 1 12 8a4 4 0 0 1 7.5 2.3C19.5 15.6 12 20 12 20z\"/><path d=\"M12 11.5c-1.3 1.6-1.6 2.5-1.6 3.1a1.6 1.6 0 0 0 3.2 0c0-.6-.3-1.5-1.6-3.1z\" fill=\"#0F2A44\"/>" },
   { key: "quiet_send", label: "SEND-friendly / quiet sessions", bg: "#EFE9FA", svg: "<path d=\"M4 15v-3a8 8 0 0 1 16 0v3\"/><path d=\"M4 14h3v6H5a1 1 0 0 1-1-1z\"/><path d=\"M20 14h-3v6h2a1 1 0 0 0 1-1z\"/>" },
+  { key: "creche", label: "Cr\u00e8che", bg: "#FFF3D3", svg: "<circle cx=\"9\" cy=\"5.5\" r=\"2.2\"/><path d=\"M6 21v-5.5L4.5 12 9 10l4.5 2L12 15.5V21\"/><path d=\"M9 14v7\"/><rect x=\"15\" y=\"15\" width=\"6\" height=\"6\" rx=\"1\"/><path d=\"M16.5 11.5l1.5-2.5 1.5 2.5z\"/>" },
+  { key: "changing_places", label: "Changing Places toilet", bg: "#E6EDFD", svg: "<path d=\"M3 4h18\"/><path d=\"M15 4v4\"/><path d=\"M13.5 8h3\"/><circle cx=\"8\" cy=\"10\" r=\"1.8\"/><rect x=\"3\" y=\"14\" width=\"18\" height=\"3.5\" rx=\"1.5\"/><path d=\"M6 17.5V21M18 17.5V21\"/><path d=\"M10.5 14l1.5-3h3\"/>" },
 ];
 export const FAC = Object.fromEntries(FACILITIES.map(f => [f.key, f]));
 // "No" chips only show for these, where a confirmed "no" really matters to parents

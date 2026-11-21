@@ -1,7 +1,7 @@
 // Bristol Free & Affordable: makes the site installable, faster on repeat visits,
 // and shows a friendly page when there's no signal.
 // Pages, scripts and styles always try the network first, so a new deploy shows straight away.
-const VERSION = "bf-2026-11-20a";
+const VERSION = "bf-2026-11-21a";
 const CORE = ["/", "/offline.html", "/css/styles.css", "/img/logo-mark.svg", "/img/app/icon-192.png", "/manifest.webmanifest"];
 
 self.addEventListener("install", e => {

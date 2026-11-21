@@ -1,5 +1,5 @@
 import { addBasemap } from "./basemap.js";
-import { fetchListings, AREAS, CATS, PRICE, dealIndex } from "./data.js";
+import { fetchListings, AREAS, CATS, CAT_GROUPS, groupOf, listingCats, inCat, PRICE, dealIndex } from "./data.js";
 import { $, card, initHeader, openListing, wireModal, esc, qrMark, favourites } from "./ui.js";
 import { FACILITIES, FAC, facIcon, facilitiesIndex, yesKeys } from "./facilities.js";
 import { handleClaim } from "./claim.js";
@@ -14,6 +14,9 @@ $("#area").value = AREAS.includes(params.get("area")) ? params.get("area") : "";
 $("#price").value = ["0", "1", "2", "3"].includes(params.get("price")) ? params.get("price") : "";
 $("#age").value = ["baby", "toddler", "kids", "teen"].includes(params.get("age")) ? params.get("age") : "";
 let activeCat = CATS[params.get("cat")] ? params.get("cat") : "";
+// A heading (e.g. "Things to do") can be picked on its own; a category always implies its heading
+let activeGroup = activeCat ? groupOf(activeCat)?.key || "" : (CAT_GROUPS.find(g => g.key === params.get("group"))?.key || "");
+const groupCats = () => CAT_GROUPS.find(g => g.key === activeGroup)?.cats || [];
 
 /* ---------- map ---------- */
 let map = null, cluster = null, markers = new Map();
@@ -85,18 +88,23 @@ function filtered() {
   const favs = favourites();
   const q = $("#q").value.toLowerCase().trim(), a = $("#area").value, p = $("#price").value, g = $("#age").value;
   return all.filter(l =>
-    (!activeCat || l.category === activeCat) && (!a || l.area === a) && (p === "" || l.price_band === +p) &&
+    (activeCat ? inCat(l, activeCat) : !activeGroup || groupCats().some(k => inCat(l, k))) && (!a || l.area === a) && (p === "" || l.price_band === +p) &&
     (!g || (l.ages || []).includes(g)) &&
     [...facSel].every(k => l._fac?.includes(k)) &&
     (!savedOnly || favs.has(String(l.id))) &&
-    (!q || `${l.name} ${l.description || ""} ${CATS[l.category]?.n || ""} ${l.area}`.toLowerCase().includes(q))
+    (!q || `${l.name} ${l.description || ""} ${listingCats(l).map(k => CATS[k].n).join(" ")} ${l.area}`.toLowerCase().includes(q))
   ).sort(here
     ? (x, y) => (x._dist ?? 1e9) - (y._dist ?? 1e9) || x.name.localeCompare(y.name)
     : (x, y) => rank(y) - rank(x) || x.name.localeCompare(y.name));
 }
 function renderChips() {
-  $("#chips").innerHTML = `<button type="button" class="chip${activeCat ? "" : " on"}" data-cat="" aria-pressed="${!activeCat}">All</button>` +
-    Object.entries(CATS).map(([k, c]) => `<button type="button" class="chip${activeCat === k ? " on" : ""}" data-cat="${k}" aria-pressed="${activeCat === k}">${esc(c.n)}</button>`).join("");
+  const chip = (attr, on, label) => `<button type="button" class="chip${on ? " on" : ""}" ${attr} aria-pressed="${on}">${esc(label)}</button>`;
+  $("#chips").innerHTML = chip('data-group=""', !activeGroup, "All") +
+    CAT_GROUPS.map(g => chip(`data-group="${g.key}"`, activeGroup === g.key, g.n)).join("");
+  const sub = $("#subchips");
+  sub.hidden = !activeGroup;
+  sub.innerHTML = activeGroup ? chip('data-cat=""', !activeCat, "Everything") +
+    groupCats().map(k => chip(`data-cat="${k}"`, activeCat === k, CATS[k].n)).join("") : "";
 }
 function syncUrl() {
   const u = new URLSearchParams();
@@ -104,7 +112,7 @@ function syncUrl() {
   if ($("#area").value) u.set("area", $("#area").value);
   if ($("#price").value) u.set("price", $("#price").value);
   if ($("#age").value) u.set("age", $("#age").value);
-  if (activeCat) u.set("cat", activeCat);
+  if (activeCat) u.set("cat", activeCat); else if (activeGroup) u.set("group", activeGroup);
   if (facSel.size) u.set("fac", [...facSel].join(","));
   history.replaceState(null, "", u.toString() ? `?${u}` : location.pathname);
 }
@@ -132,7 +140,8 @@ $("#fac-chips").addEventListener("click", e => {
   facSel.has(b.dataset.fac) ? facSel.delete(b.dataset.fac) : facSel.add(b.dataset.fac);
   renderFacChips(); render();
 });
-$("#chips").addEventListener("click", e => { const b = e.target.closest("[data-cat]"); if (!b) return; activeCat = b.dataset.cat; renderChips(); render(); });
+$("#chips").addEventListener("click", e => { const b = e.target.closest("[data-group]"); if (!b) return; activeGroup = b.dataset.group; activeCat = ""; renderChips(); render(); });
+$("#subchips").addEventListener("click", e => { const b = e.target.closest("[data-cat]"); if (!b) return; activeCat = b.dataset.cat; renderChips(); render(); });
 ["#q", "#area", "#price", "#age"].forEach(s => $(s).addEventListener("input", render));
 $("#results").addEventListener("click", e => {
   const b = e.target.closest(".card[data-id]"); if (!b) return;

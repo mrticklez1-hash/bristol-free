@@ -8,7 +8,7 @@ create extension if not exists "pgcrypto";
 create table if not exists public.listings (
   id            uuid primary key default gen_random_uuid(),
   name          text not null,
-  category      text not null check (category in ('play','classes','cafes','parties','childcare','health','shops','sport','outdoors')),
+  category      text not null check (category in ('play','daysout','entertainment','outdoors','sport','classes','toddler','holiday','community','tutoring','cafes','shops','baby','hair','health','childcare','support','parties','entertainers','partyextras','photographers')), -- see update-15
   area          text not null,
   description   text,
   address       text,

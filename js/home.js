@@ -1,4 +1,4 @@
-import { fetchListings, fetchEvents, fetchDeals, fetchRecipes, occurrences, AREAS, CATS, PRICE, listingUrl, dealIndex } from "./data.js";
+import { fetchListings, fetchEvents, fetchDeals, fetchRecipes, occurrences, AREAS, CATS, CAT_GROUPS, PRICE, listingUrl, dealIndex } from "./data.js";
 import { facilitiesIndex, yesKeys } from "./facilities.js";
 import { $, card, initHeader, openListing, wireModal, esc, dealCard, recipeCard } from "./ui.js";
 import { handleClaim } from "./claim.js";
@@ -12,7 +12,7 @@ over();
 
 $("#h-area").insertAdjacentHTML("beforeend", AREAS.map(a => `<option>${esc(a)}</option>`).join(""));
 $("#area-links").innerHTML = AREAS.map(a => `<a class="chip" href="/directory.html?area=${encodeURIComponent(a)}">${esc(a)}</a>`).join("");
-$("#cat-links").innerHTML = Object.entries(CATS).map(([k, c]) => `<a class="chip" href="/directory.html?cat=${k}">${esc(c.n)}</a>`).join("");
+$("#cat-links").innerHTML = CAT_GROUPS.map(g => `<div class="cat-group"><h3><a href="/directory.html?group=${g.key}">${esc(g.n)}</a></h3><div class="chips">${g.cats.map(k => `<a class="chip" href="/directory.html?cat=${k}">${esc(CATS[k].n)}</a>`).join("")}</div></div>`).join("");
 
 let all = [];
 try {

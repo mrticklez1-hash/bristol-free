@@ -1,7 +1,7 @@
 import { addBasemap } from "./basemap.js";
 import { compressImage, prettySize } from "./compress.js";
 import { FACILITIES, facBubble } from "./facilities.js";
-import { DEMO, sb, AREAS, CATS, PRICE, listingUrl } from "./data.js";
+import { DEMO, sb, AREAS, CATS, CAT_GROUPS, catOptions, PRICE, listingUrl } from "./data.js";
 import { DEMO_LISTINGS } from "./demo-data.js";
 import { $, esc, initHeader, readForm } from "./ui.js";
 
@@ -193,7 +193,19 @@ $("#tabs").addEventListener("click", e => {
 $("#tabs [data-tab=l]").classList.add("on");
 
 /* ---------- editor ---------- */
-$("#e-cat").innerHTML = Object.entries(CATS).map(([k, c]) => `<option value="${k}">${esc(c.n)}</option>`).join("");
+$("#e-cat").innerHTML = catOptions();
+// "Also show under…": extra categories (update 15), up to 3, never the main one
+$("#e-xcats").innerHTML = CAT_GROUPS.map(g => `<div><b>${esc(g.n)}</b><div class="chips">${g.cats.map(k => `<label class="check"><input type="checkbox" name="xcats" value="${k}"> ${esc(CATS[k].n)}</label>`).join("")}</div></div>`).join("");
+function syncXcats() {
+  const f = $("#eform"), main = f.elements.category.value;
+  const boxes = [...f.querySelectorAll("input[name=xcats]")];
+  boxes.forEach(c => { if (c.value === main) c.checked = false; });
+  const n = boxes.filter(c => c.checked).length;
+  boxes.forEach(c => { c.disabled = c.value === main || (!c.checked && n >= 3); });
+  $("#e-xcats-n").textContent = n ? `(${n} of 3: ${boxes.filter(c => c.checked).map(c => CATS[c.value].n).join(", ")})` : "(optional, up to 3)";
+}
+$("#e-xcats").addEventListener("change", syncXcats);
+$("#e-cat").addEventListener("change", syncXcats);
 $("#e-area").innerHTML = AREAS.map(a => `<option>${esc(a)}</option>`).join("");
 let emap = null, pin = null, pendingFile = null;
 async function ensureMap() {
@@ -219,6 +231,9 @@ async function openEditor(l) {
   f.elements.google_place_id.value = v.google_place_id || ""; f.dataset.hasPid = "google_place_id" in v ? "1" : "";
   f.elements.category.value = v.category; f.elements.area.value = v.area; f.elements.price_band.value = String(v.price_band ?? 0);
   f.querySelectorAll("input[name=ages]").forEach(c => c.checked = (v.ages || []).includes(c.value));
+  f.querySelectorAll("input[name=xcats]").forEach(c => c.checked = (v.extra_categories || []).includes(c.value));
+  f.dataset.hasXcats = "extra_categories" in v ? "1" : "";
+  $("#e-xcats-wrap").open = !!(v.extra_categories || []).length; syncXcats();
   f.elements.published.checked = v.status !== "draft"; f.elements.claimed.checked = !!v.claimed; f.elements.featured.checked = !!v.featured;
   f.elements.last_checked.value = v.last_checked || ""; f.elements.fac_by.value = v.claimed ? "business" : "research";
   loadFacilities(l?.id);
@@ -283,6 +298,9 @@ $("#eform").addEventListener("submit", async e => {
     // only sent once the google_place_id column exists (update-08), so saving never breaks before then
     if (d.google_place_id || f.dataset.hasPid) row.google_place_id = (d.google_place_id || "").trim() || null;
     row.last_checked = d.last_checked || null;
+    // only sent once the extra_categories column exists (update-15), so saving never breaks before then
+    const xc = [...f.querySelectorAll("input[name=xcats]:checked")].map(c => c.value).filter(k => k !== row.category).slice(0, 3);
+    if (xc.length || f.dataset.hasXcats) row.extra_categories = xc;
     row.parking_note = (d.parking_note || "").trim() || null;
     const id = await saveListing(row);
     await saveFacilities(id);

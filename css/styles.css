@@ -587,3 +587,16 @@ details.dir[open] > summary::after { transform: translateY(1px) rotate(-135deg);
 .app-steps { grid-column: 1 / -1; margin: 0; padding: 10px 12px 10px 30px; border-radius: 14px; background: #FBF8F3; font-size: 14px; line-height: 1.6; }
 .app-steps svg { display: inline-block; vertical-align: -3px; }
 p.app-steps { padding-left: 12px; }
+
+/* Category headings (update 15) */
+.subchips{margin-top:10px;padding:10px 12px;background:var(--skyp);border-radius:18px}
+.subchips[hidden]{display:none}
+.subchips .chip{min-height:40px;padding:8px 14px;font-size:14px}
+.cat-groups{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.cat-group h3{margin:0 0 8px;font-size:17px}
+.cat-group h3 a{color:inherit;text-decoration:none}
+.cat-group h3 a:hover{text-decoration:underline}
+.e-xcats{display:grid;gap:10px;margin-top:8px}
+.e-xcats b{display:block;font-size:13px;margin-bottom:4px}
+.e-xcats .chips{gap:6px 14px}
+#e-xcats-wrap > summary{cursor:pointer;font-weight:700;color:var(--navy)}

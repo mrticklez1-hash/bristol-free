@@ -15,6 +15,18 @@ const ICON = {
   shops: "M5 8h14l-1 12H6z M9 8V6a3 3 0 0 1 6 0v2",
   sport: "M12 3a9 9 0 1 0 0.01 0z M3.5 9.5c4 1 13 1 17 0 M3.5 14.5c4-1 13-1 17 0 M12 3c-3 4-3 14 0 18",
   outdoors: "M12 3l-5 7h3l-4 6h12l-4-6h3z M12 16v5",
+  daysout: "M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z M12 10.5v3 M10.5 12h3",
+  entertainment: "M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4z M10 7v2 M10 11v2 M10 15v2",
+  toddler: "M4 13h7v7H4z M13 13h7v7h-7z M8.5 4h7v7h-7z",
+  holiday: "M12 8a4 4 0 1 0 .01 0z M12 2v2 M12 20v2 M2 12h2 M20 12h2 M4.9 4.9l1.4 1.4 M17.7 17.7l1.4 1.4 M4.9 19.1l1.4-1.4 M17.7 6.3l1.4-1.4",
+  community: "M8 5a3 3 0 1 0 .01 0z M16 5a3 3 0 1 0 .01 0z M3 20c0-3 2.2-5 5-5s5 2 5 5 M11 20c0-3 2.2-5 5-5s5 2 5 5",
+  tutoring: "M4 20l1-4L16 5l3 3L8 19z M14 7l3 3 M4 20h6",
+  baby: "M10 3h4 M10 3v3 M14 3v3 M9 6h6 M8 9a2 2 0 0 1 2-3h4a2 2 0 0 1 2 3v10a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2z M8 13h3 M8 16h3",
+  hair: "M6 3.5a2.5 2.5 0 1 0 .01 0z M6 15.5a2.5 2.5 0 1 0 .01 0z M8 7.5L20 18 M8 16.5L20 6",
+  support: "M12 3a9 9 0 1 0 .01 0z M12 8a4 4 0 1 0 .01 0z M5.6 5.6l3.6 3.6 M14.8 14.8l3.6 3.6 M18.4 5.6l-3.6 3.6 M9.2 14.8l-3.6 3.6",
+  entertainers: "M4 20L14 10 M15 3l1 2.5 2.5 1-2.5 1L15 10l-1-2.5-2.5-1 2.5-1z M19 13l.5 1.5 1.5.5-1.5.5-.5 1.5-.5-1.5-1.5-.5 1.5-.5z",
+  partyextras: "M4 10h16v4H4z M5 14h14v7H5z M12 10v11 M12 10c-2-4-6-4-6-1.5S10 10 12 10 M12 10c2-4 6-4 6-1.5S14 10 12 10",
+  photographers: "M4 8h3l2-3h6l2 3h3v11H4z M12 10a3.5 3.5 0 1 0 .01 0z",
 };
 export const icon = cat => `<svg viewBox="0 0 24 24" fill="none" stroke="#0F2A44" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICON[cat] || ICON.play}"/></svg>`;
 

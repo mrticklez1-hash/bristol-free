@@ -25,7 +25,8 @@ export const DEMO_LISTINGS = [
  },
  {
   "name": "Library Rhyme Time",
-  "category": "classes",
+  "category": "toddler",
+  "extra_categories": ["community"],
   "area": "Central Bristol",
   "description": "Free weekly songs and stories for under-5s. Just turn up.",
   "price_band": 0,
@@ -210,7 +211,7 @@ export const DEMO_LISTINGS = [
  },
  {
   "name": "Party Pandas",
-  "category": "parties",
+  "category": "entertainers",
   "area": "South Bristol",
   "description": "Entertainers, games, bubbles and balloon modelling. They bring everything.",
   "price_band": 3,
@@ -256,7 +257,7 @@ export const DEMO_LISTINGS = [
  },
  {
   "name": "Tiny Toes Baby Massage",
-  "category": "health",
+  "category": "baby",
   "area": "Clevedon",
   "description": "Relaxed baby massage and baby yoga courses for new parents.",
   "price_band": 2,
@@ -347,7 +348,7 @@ export const DEMO_LISTINGS = [
  },
  {
   "name": "Wild Woods Adventure Farm",
-  "category": "play",
+  "category": "daysout",
   "area": "Yate",
   "description": "Animal feeding, tractor rides and an outdoor play barn.",
   "price_band": 2,
@@ -440,7 +441,7 @@ export const DEMO_LISTINGS = [
  },
  {
   "name": "Bounce Bonanza Hire",
-  "category": "parties",
+  "category": "partyextras",
   "area": "Portishead",
   "description": "Bouncy castle and soft play hire for parties across North Somerset.",
   "price_band": 3,

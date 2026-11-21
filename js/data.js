@@ -16,17 +16,49 @@ export async function sb() {
 
 export const AREAS = ["Central Bristol","North Bristol","South Bristol","East Bristol","Bradley Stoke","Keynsham","Portishead","Clevedon","Nailsea","Thornbury","Yate"];
 
+// Category codes never change (they're stored on every listing); only the labels can.
+// Each category sits under one of the five headings in CAT_GROUPS.
 export const CATS = {
-  play:      { n: "Soft play & days out",   c: "#FFE7AE", deep: "#E0A83A" },
-  classes:   { n: "Classes & clubs",        c: "#DCE5FF", deep: "#4C6FD6" },
-  cafes:     { n: "Family cafés",           c: "#F7DDCB", deep: "#C2703D" },
-  parties:   { n: "Parties",                c: "#F9D3E0", deep: "#D2557E" },
-  childcare: { n: "Nurseries & childcare",  c: "#E8DDF8", deep: "#7E5BC2" },
-  health:    { n: "Health & wellbeing",     c: "#CDEFE5", deep: "#1F9A7A" },
-  shops:     { n: "Shops",                  c: "#D3EAF2", deep: "#3C8DAD" },
-  sport:     { n: "Sport & swimming",       c: "#D5E6F5", deep: "#1C5C8C" },
-  outdoors:  { n: "Parks & outdoors",       c: "#D2EDDD", deep: "#0B6B4F" },
+  // Things to do
+  play:          { n: "Indoor play",              c: "#FFE7AE", deep: "#E0A83A" },
+  daysout:       { n: "Days out & attractions",   c: "#FFE0C2", deep: "#D9782E" },
+  entertainment: { n: "Entertainment",            c: "#FADBD6", deep: "#C9504A" },
+  outdoors:      { n: "Parks & outdoors",         c: "#D2EDDD", deep: "#0B6B4F" },
+  sport:         { n: "Sport & swimming",         c: "#D5E6F5", deep: "#1C5C8C" },
+  // Learn & grow
+  classes:       { n: "Classes & clubs",          c: "#DCE5FF", deep: "#4C6FD6" },
+  toddler:       { n: "Baby & toddler groups",    c: "#FFF0C7", deep: "#C7972B" },
+  holiday:       { n: "Holiday clubs & camps",    c: "#FFE5B8", deep: "#D98E1F" },
+  community:     { n: "Libraries & community",    c: "#E1EBD3", deep: "#5E8A3A" },
+  tutoring:      { n: "Tutoring",                 c: "#E2E3F7", deep: "#5A5FB8" },
+  // Eat & shop
+  cafes:         { n: "Eating out",               c: "#F7DDCB", deep: "#C2703D" },
+  shops:         { n: "Shops",                    c: "#D3EAF2", deep: "#3C8DAD" },
+  // Look after
+  baby:          { n: "Pregnancy & new baby",     c: "#FCE3EC", deep: "#C96A8C" },
+  hair:          { n: "Hair & beauty",            c: "#F3DDF2", deep: "#A35AA0" },
+  health:        { n: "Health & wellbeing",       c: "#CDEFE5", deep: "#1F9A7A" },
+  childcare:     { n: "Childcare & nurseries",    c: "#E8DDF8", deep: "#7E5BC2" },
+  support:       { n: "Support",                  c: "#D8ECEE", deep: "#2F8790" },
+  // Celebrate
+  parties:       { n: "Party venues",             c: "#F9D3E0", deep: "#D2557E" },
+  entertainers:  { n: "Children's entertainers",  c: "#FBE1D0", deep: "#D46A3A" },
+  partyextras:   { n: "Party extras",             c: "#F6E0F0", deep: "#B4528F" },
+  photographers: { n: "Photographers",            c: "#DFE6EC", deep: "#4F6B82" },
 };
+export const CAT_GROUPS = [
+  { key: "do",        n: "Things to do",  cats: ["play", "daysout", "entertainment", "outdoors", "sport"] },
+  { key: "learn",     n: "Learn & grow",  cats: ["classes", "toddler", "holiday", "community", "tutoring"] },
+  { key: "eat",       n: "Eat & shop",    cats: ["cafes", "shops"] },
+  { key: "care",      n: "Look after",    cats: ["baby", "hair", "health", "childcare", "support"] },
+  { key: "celebrate", n: "Celebrate",     cats: ["parties", "entertainers", "partyextras", "photographers"] },
+];
+export const groupOf = cat => CAT_GROUPS.find(g => g.cats.includes(cat)) || null;
+// A listing's main category plus any extra ones (extra_categories, update 15)
+export const listingCats = l => [l.category, ...(Array.isArray(l.extra_categories) ? l.extra_categories : [])].filter(k => CATS[k]);
+export const inCat = (l, cat) => listingCats(l).includes(cat);
+// Admin dropdowns: <optgroup> per heading
+export const catOptions = () => CAT_GROUPS.map(g => `<optgroup label="${g.n.replace(/&/g, "&amp;")}">${g.cats.map(k => `<option value="${k}">${CATS[k].n.replace(/&/g, "&amp;")}</option>`).join("")}</optgroup>`).join("");
 
 export const PRICE = ["Free", "Under £5", "£5 to £10", "£10+"];
 export const AGES = { baby: "Babies (0–1)", toddler: "Toddlers (1–4)", kids: "Kids (5–11)", teen: "Teens (12+)" };
