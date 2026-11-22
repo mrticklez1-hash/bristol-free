@@ -634,7 +634,6 @@ p.app-steps { padding-left: 12px; }
 .ev-tone .ev-date{background:#fff}
 .ev-tone .tagpill,.ev-tone .tagpill.free{background:#fff}
 .ev-tone .cal-add summary,.ev-tone .ev-meta .note{color:var(--navy)}
-<<<<<<< HEAD
 .ev-tone.t-mint{--ink:#0B6B4F}.ev-tone.t-lavender{--ink:#5B3FA8}.ev-tone.t-peach{--ink:#A84A22}.ev-tone.t-sky{--ink:#245E96}
 .ev-tone.t-butter{--ink:#7D5A0A}.ev-tone.t-pink{--ink:#A3305E}.ev-tone.t-periwinkle{--ink:#3550B8}
 .ev-tone .ev-date{color:var(--ink,var(--mint-ink))}
@@ -651,7 +650,7 @@ p.app-steps { padding-left: 12px; }
   .panel.suggest-dark b{flex:1 1 180px;font-size:16px}
   .panel.suggest-dark .btn{flex:none;width:auto;padding:10px 16px;margin:0}
 }
-=======
+
 /* Explore near you: chips beside a mini map that tours a few places */
 .explore{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:44px;align-items:center}
 .explore h2{font-size:26px;margin-bottom:6px}
@@ -679,4 +678,3 @@ a.tour-card:hover{color:var(--navy)}
 .tour-body em{font-style:normal;font-weight:800;color:#2F6FED;margin-top:4px}
 @media(max-width:860px){.explore{grid-template-columns:1fr;gap:22px}#tour-map{height:340px}.tour-float{width:280px}.tour-img{height:118px}.tour-body .tour-desc{display:none}}
 @media(prefers-reduced-motion:reduce){.tour-float{transition:none}}
->>>>>>> tour-map
