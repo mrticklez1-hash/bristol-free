@@ -11,7 +11,8 @@ window.addEventListener("scroll", over, { passive: true });
 over();
 
 $("#h-area").insertAdjacentHTML("beforeend", AREAS.map(a => `<option>${esc(a)}</option>`).join(""));
-$("#area-links").innerHTML = AREAS.map(a => `<a class="chip" href="/directory.html?area=${encodeURIComponent(a)}">${esc(a)}</a>`).join("");
+const ARROW = '<svg class="loc-arrow" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20.6 3.4 3.9 10.2c-.8.3-.7 1.5.1 1.7l6.6 1.5 1.5 6.6c.2.8 1.4.9 1.7.1l6.8-16.7c.3-.7-.4-1.3-1-1Z" fill="currentColor"/></svg>';
+$("#area-links").innerHTML = `<a class="chip chip-near" href="/directory.html?near=1">${ARROW}Use my location</a>` + AREAS.map(a => `<a class="chip" href="/directory.html?area=${encodeURIComponent(a)}">${esc(a)}</a>`).join("");
 $("#cat-links").innerHTML = CAT_GROUPS.map(g => `<div class="cat-group"><h3><a href="/directory.html?group=${g.key}">${esc(g.n)}</a></h3><div class="chips">${g.cats.map(k => `<a class="chip" href="/directory.html?cat=${k}">${esc(CATS[k].n)}</a>`).join("")}</div></div>`).join("");
 
 let all = [];

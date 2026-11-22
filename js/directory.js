@@ -180,3 +180,8 @@ const [, data, findDeal] = await Promise.all([initMap(), fetchListings().catch((
 if (data) { data.forEach(l => { l._deal = !!findDeal(l); }); const facM = await facilitiesIndex(data); data.forEach(l => { l._fac = yesKeys(facM.get(String(l.id))); }); }
 if (!data) { $("#results").innerHTML = '<div class="empty">Listings are taking a moment to load. Please refresh.</div>'; }
 else { all = data; render(); }
+// arrived from "Use my location" on the home page: start Near me straight away
+if (data && params.get("near") === "1" && !here) {
+  nearBtn.click();
+  const u = new URL(location.href); u.searchParams.delete("near"); history.replaceState(null, "", u);
+}

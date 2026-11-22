@@ -155,7 +155,7 @@ section.block{padding:36px 0}
 .duo .dark{background:var(--navy);color:#fff}
 .duo .dark p{color:#D5E3F0}
 
-footer.site{margin-top:40px;background:var(--skyp)}
+footer.site{margin-top:40px;background:linear-gradient(270deg,#D1E5F8,var(--skyp) 70%)}
 .foot{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;padding-top:28px;padding-bottom:28px;font-size:14px;color:var(--text-2)}
 .foot nav{display:flex;gap:18px;flex-wrap:wrap}
 
@@ -356,8 +356,12 @@ a.card{text-decoration:none}
 .t-paper{--tone:var(--paper)}.t-butter{--tone:var(--butter)}.t-mint{--tone:var(--mintp)}.t-lavender{--tone:var(--lavender)}
 .t-peach{--tone:var(--peach)}.t-periwinkle{--tone:var(--periwinkle)}.t-pink{--tone:var(--pink)}.t-sky{--tone:var(--skyp)}
 /* soft wave along the top edge of each band, echoing the hills in the placeholder pictures */
-.tone{background:var(--tone);position:relative;margin-top:40px;padding:40px 0 52px}
-.tone::before{content:"";position:absolute;left:0;right:0;top:-39px;height:40px;background:var(--tone);pointer-events:none;
+/* subtle gradient: each band deepens towards one side, alternating left and right down the page */
+.t-paper{--deep:#F9F0E1}.t-butter{--deep:#FFEDBF}.t-mint{--deep:#CFF3DF}.t-lavender{--deep:#E2D5FA}
+.t-peach{--deep:#FFDAC6}.t-periwinkle{--deep:#D0DEFF}.t-pink{--deep:#FDD0E1}.t-sky{--deep:#D1E5F8}
+.tone{--grad:linear-gradient(90deg,var(--deep,var(--tone)),var(--tone) 70%);background:var(--grad);position:relative;margin-top:40px;padding:40px 0 52px}
+.tone:nth-of-type(even){background:linear-gradient(270deg,var(--deep,var(--tone)),var(--tone) 70%)}
+.tone::before{content:"";position:absolute;left:0;right:0;top:-39px;height:40px;background:var(--grad);pointer-events:none;
   -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 40' preserveAspectRatio='none'%3E%3Cpath d='M0 40V22Q240 0 520 18T1040 16T1440 12V40Z'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;
           mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 40' preserveAspectRatio='none'%3E%3Cpath d='M0 40V22Q240 0 520 18T1040 16T1440 12V40Z'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
 .tone:nth-of-type(even)::before{transform:scaleX(-1)}
@@ -374,14 +378,14 @@ section.tone + section.tone{margin-top:0}
 .tone .duo .mint{background:#fff;border:2px dashed var(--mint)}
 /* inner pages: the page title sits in a coloured band */
 .page-head,.card-app>.card-intro,.staff-head{position:relative}
-.page-head::after{content:"";position:absolute;z-index:-1;top:-44px;bottom:-30px;left:calc(50% - 50vw);right:calc(50% - 50vw);background:var(--tone);
+.page-head::after{content:"";position:absolute;z-index:-1;top:-44px;bottom:-30px;left:calc(50% - 50vw);right:calc(50% - 50vw);background:linear-gradient(90deg,var(--deep,var(--tone)),var(--tone) 70%);
   -webkit-mask:linear-gradient(#000 calc(100% - 40px),transparent calc(100% - 40px)),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 40' preserveAspectRatio='none'%3E%3Cpath d='M0 0H1440V20Q1100 40 720 18T0 22Z'/%3E%3C/svg%3E") 0 100%/100% 40px no-repeat;
           mask:linear-gradient(#000 calc(100% - 40px),transparent calc(100% - 40px)),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 40' preserveAspectRatio='none'%3E%3Cpath d='M0 0H1440V20Q1100 40 720 18T0 22Z'/%3E%3C/svg%3E") 0 100%/100% 40px no-repeat}
 html{overflow-x:clip}
 main{position:relative;z-index:0}
 .page-head{margin-bottom:34px}
 /* pages without a page-head get a gentle wash at the top instead */
-body.wash main{background:linear-gradient(var(--tone),var(--paper) 420px)}
+body.wash main{background:linear-gradient(rgba(251,248,243,0),var(--paper) 420px),linear-gradient(90deg,var(--deep,var(--tone)),var(--tone) 70%) 0 0/100% 420px no-repeat var(--paper)}
 .verify{background:#fff}
 .verify.good{background:#E8F8EF}.verify.warn{background:#FFF6E0}.verify.bad{background:#FDECEC}
 .fcard-wrap .panel,.savings{background:#fff}
@@ -615,3 +619,8 @@ p.app-steps { padding-left: 12px; }
   .ev-date span { font-size: 10px; }
 }
 .sugg-photo { display: block; max-width: 220px; max-height: 160px; border-radius: 12px; margin-top: 8px; object-fit: cover; }
+
+/* "Use my location" chip on the home page */
+.chip.chip-near{display:inline-flex;align-items:center;gap:6px;background:#2F6FED;color:#fff;border-color:#2F6FED;font-weight:700}
+.tone .chip.chip-near{background:#2F6FED;border-color:#2F6FED}
+.chip.chip-near:hover{background:#245BD0}
