@@ -1,4 +1,4 @@
--- Update 15: photos with "Suggest an event" and "Offer a deal" (Nov 2026)
+-- Update 19: photos with "Suggest an event" and "Offer a deal" (Nov 2026)
 -- Parents and businesses can add one photo to a suggestion. Photos go into a PRIVATE
 -- storage area that only admins can see. Nothing is public until you add the event or
 -- deal in admin, which copies the photo into the normal public photos.
