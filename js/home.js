@@ -2,6 +2,7 @@ import { fetchListings, fetchEvents, fetchDeals, fetchRecipes, occurrences, AREA
 import { facilitiesIndex, yesKeys } from "./facilities.js";
 import { $, card, initHeader, openListing, wireModal, esc, dealCard, recipeCard } from "./ui.js";
 import { handleClaim } from "./claim.js";
+import { startTour } from "./home-map.js";
 
 initHeader();
 wireModal();
@@ -22,6 +23,7 @@ try {
 } catch (e) {
   $("#free").innerHTML = '<div class="empty">Listings are taking a moment to load. Please refresh.</div>';
 }
+startTour(all, $("#tour-map"));
 const free = all.filter(l => l.price_band === 0).sort((a, b) => !!b.image_url - !!a.image_url).slice(0, 4);
 const feat = all.filter(l => l.featured && l.price_band > 0).slice(0, 4);
 $("#free").innerHTML = free.map(card).join("") || '<div class="empty">Free listings coming soon.</div>';
