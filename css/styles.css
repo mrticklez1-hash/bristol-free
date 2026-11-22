@@ -626,3 +626,11 @@ p.app-steps { padding-left: 12px; }
 .chip.chip-near{display:inline-flex;align-items:center;gap:6px;background:#2F6FED;color:#fff;border-color:#2F6FED;font-weight:700}
 .tone .chip.chip-near{background:#2F6FED;border-color:#2F6FED}
 .chip.chip-near:hover{background:#245BD0}
+
+/* What's on: each event box gets its own pastel, with the same gentle gradient as the page bands */
+.ev.ev-tone{background:linear-gradient(90deg,var(--deep,var(--tone)),var(--tone) 70%);border-color:transparent}
+.ev.ev-tone.ev-flip{background:linear-gradient(270deg,var(--deep,var(--tone)),var(--tone) 70%)}
+.ev-tone .ev-img{background:rgba(255,255,255,.6)}
+.ev-tone .ev-date{background:#fff}
+.ev-tone .tagpill,.ev-tone .tagpill.free{background:#fff}
+.ev-tone .cal-add summary,.ev-tone .ev-meta .note{color:var(--navy)}

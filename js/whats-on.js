@@ -63,14 +63,14 @@ document.addEventListener("click", e => {
   downloadIcs(shownOcc[+b.dataset.ics]); b.closest("details").open = false;
 });
 
-function eventRow(o) {
+const EV_TONES = ["mint", "lavender", "peach", "sky", "butter", "pink", "periwinkle"];
+function eventRow(o, n = 0) {
   const web = safeUrl(o.website);
   const place = o.listing ? `<a href="${listingUrl(o.listing)}">${esc(o.venue || o.listing.name)}</a>` : esc(o.venue || "");
   const price = o.price_band === 0 ? '<span class="tagpill free">Free</span>' : `<span class="tagpill">${esc(o.price_note || PRICE[o.price_band])}</span>`;
   const img = safeUrl(o.image_url) || safeUrl(o.listing?.image_url);
-  const tint = ["#FFF3D3", "#E2F4EA", "#FCE6EE", "#E6EDFD", "#EFE9FA", "#FDE8DC"][o.at.getDate() % 6];
-  return `<article class="ev">
-    <div class="ev-media"><div class="ev-img"${img ? "" : ` style="background:${tint}"`}>${img ? `<img src="${esc(img)}" alt="" loading="lazy" decoding="async">` : '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#0F2A44" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12 13.2l.9 1.8 2 .3-1.45 1.4.35 2-1.8-.95-1.8.95.35-2L9.1 15.3l2-.3z"/></svg>'}</div>
+  return `<article class="ev ev-tone t-${EV_TONES[n % EV_TONES.length]}${n % 2 ? " ev-flip" : ""}">
+    <div class="ev-media"><div class="ev-img">${img ? `<img src="${esc(img)}" alt="" loading="lazy" decoding="async">` : '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#0F2A44" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12 13.2l.9 1.8 2 .3-1.45 1.4.35 2-1.8-.95-1.8.95.35-2L9.1 15.3l2-.3z"/></svg>'}</div>
     <div class="ev-date" aria-hidden="true"><b>${o.at.getDate()}</b><span>${o.at.toLocaleDateString("en-GB", { month: "short" })}</span></div></div>
     <div class="ev-body">
       <h3>${esc(o.title)}</h3>
@@ -90,11 +90,11 @@ function render() {
   $("#wo-clear").hidden = !picked;
   $("#wo-count").textContent = picked ? `${shown.length} on ${fmtDay(picked)}` : `${shown.length} coming up in the next month`;
   if (!shown.length) { $("#wo-list").innerHTML = `<div class="empty">${picked ? "Nothing listed for this day yet." : "Nothing listed yet for these filters."} Know of something? <button type="button" class="linkish" data-suggest>Tell us about it</button>.</div>`; return; }
-  let html = "", lastDay = "";
+  let html = "", lastDay = "", n = 0;
   for (const o of shown) {
     const d = fmtDay(o.at);
     if (d !== lastDay) { html += `<h2 class="ev-day">${key(o.at) === key(today) ? "Today · " : ""}${d}</h2>`; lastDay = d; }
-    html += eventRow(o);
+    html += eventRow(o, n++);
   }
   $("#wo-list").innerHTML = html;
 }
