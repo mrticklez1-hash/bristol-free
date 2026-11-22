@@ -35,7 +35,7 @@ function tourCard(l) {
   const price = l.price_band === 0 ? '<span class="tagpill free">Free</span>' : `<span class="tagpill">${PRICE[l.price_band] ?? ""}</span>`;
   return `<a class="tour-card" href="${listingUrl(l)}">
     <span class="tour-img" style="background:${c.c}">${img}${price}${l.featured ? '<span class="tagpill feat">Featured</span>' : ""}</span>
-    <span class="tour-body"><b>${esc(l.name)}</b><span>${esc(l.area)} · ${esc(c.n)}</span><em>See details</em></span>
+    <span class="tour-body"><b>${esc(l.name)}</b><span>${esc(l.area)} · ${esc(c.n)}</span>${l.description ? `<span class="tour-desc">${esc(l.description)}</span>` : ""}<em>See details →</em></span>
   </a>`;
 }
 
@@ -60,16 +60,37 @@ export function startTour(all, box) {
     const live = L.divIcon({ className: "tour-pin", html: "<span></span>", iconSize: [26, 34], iconAnchor: [13, 34] });
     tour.forEach(l => L.marker([l.lat, l.lng], { icon: dot, interactive: false, keyboard: false }).addTo(map));
     const pin = L.marker([tour[0].lat, tour[0].lng], { icon: live, keyboard: false }).addTo(map);
-    const popup = L.popup({ className: "tour-pop", closeButton: false, autoPan: false, offset: [0, -32], maxWidth: 260, minWidth: 240 });
+    // the card floats above the map box, so it can be big and spill over the edges
+    const wrapEl = box.parentElement;
+    const float = document.createElement("div");
+    float.className = "tour-float"; float.setAttribute("aria-live", "polite");
+    wrapEl.appendChild(float);
+    let current = null;
+    const place = () => {
+      if (!current) return;
+      const pt = map.latLngToContainerPoint([current.lat, current.lng]);
+      const w = float.offsetWidth, h = float.offsetHeight, mw = box.offsetWidth;
+      const spill = window.innerWidth > 860 ? 36 : 0;
+      const x = Math.max(-spill, Math.min(mw - w + spill, pt.x - w / 2));
+      float.style.left = (box.offsetLeft + x) + "px";
+      float.style.top = (box.offsetTop + pt.y - 44 - h) + "px";
+      float.style.setProperty("--arrow", (pt.x - x) + "px");
+    };
+    map.on("move zoom", place);
+    window.addEventListener("resize", place);
 
     let i = 0, timer = null, paused = still;
     const btn = box.parentElement.querySelector(".tour-toggle");
     const show = (n, fly = !still) => {
       const l = tour[n % tour.length];
-      map.closePopup();
-      const open = () => { pin.setLatLng([l.lat, l.lng]); popup.setLatLng([l.lat, l.lng]).setContent(tourCard(l)).openOn(map); };
+      float.classList.remove("on");
+      const open = () => {
+        pin.setLatLng([l.lat, l.lng]); current = l;
+        float.innerHTML = tourCard(l); place();
+        requestAnimationFrame(() => float.classList.add("on"));
+      };
       // centre a little above the place, so the pin sits low and its card has room above it
-      const z = 14, lift = map.getSize().y * 0.2;
+      const z = 14, lift = map.getSize().y * 0.3;
       const centre = map.unproject(map.project([l.lat, l.lng], z).subtract([0, lift]), z);
       if (fly) { map.once("moveend", open); map.flyTo(centre, z, { duration: 1.6 }); }
       else { map.setView(centre, z); open(); }
