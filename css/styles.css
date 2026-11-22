@@ -359,7 +359,9 @@ a.card{text-decoration:none}
 /* subtle gradient: each band deepens towards one side, alternating left and right down the page */
 .t-paper{--deep:#F9F0E1}.t-butter{--deep:#FFEDBF}.t-mint{--deep:#CFF3DF}.t-lavender{--deep:#E2D5FA}
 .t-peach{--deep:#FFDAC6}.t-periwinkle{--deep:#D0DEFF}.t-pink{--deep:#FDD0E1}.t-sky{--deep:#D1E5F8}
-.tone{--grad:linear-gradient(90deg,var(--deep,var(--tone)),var(--tone) 70%);background:var(--grad);position:relative;margin-top:40px;padding:40px 0 52px}
+.tone{--grad:linear-gradient(90deg,var(--deep,var(--tone)),var(--tone) 70%);background:var(--grad);position:relative;margin-top:40px;}
+section.tone{padding:48px 0 84px}
+@media(max-width:600px){section.tone{padding:40px 0 68px}}
 .tone:nth-of-type(even){background:linear-gradient(270deg,var(--deep,var(--tone)),var(--tone) 70%)}
 .tone::before{content:"";position:absolute;left:0;right:0;top:-39px;height:40px;background:var(--grad);pointer-events:none;
   -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 40' preserveAspectRatio='none'%3E%3Cpath d='M0 40V22Q240 0 520 18T1040 16T1440 12V40Z'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;
