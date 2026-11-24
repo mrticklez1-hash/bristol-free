@@ -163,6 +163,60 @@ function drawRing() {
   ]).addTo(map);
   map.fitBounds(L.latLng(origin.lat, origin.lng).toBounds(placeInfo.used * 1609.34 * 2), { padding: [20, 20] });
 }
+/* ---------- suggestions as you type: "bed" -> Bedminster, Bedminster Down; "BS3" -> Near BS3 ---------- */
+const qEl = $("#q");
+qEl.parentElement.classList.add("has-suggest");
+qEl.setAttribute("role", "combobox"); qEl.setAttribute("aria-autocomplete", "list");
+qEl.setAttribute("aria-controls", "q-suggest"); qEl.setAttribute("aria-expanded", "false");
+qEl.insertAdjacentHTML("afterend", '<ul class="suggest" id="q-suggest" role="listbox" aria-label="Places" hidden></ul>');
+const sug = $("#q-suggest");
+let sugItems = [], sugIdx = -1;
+function sugFrag() {
+  // the bit being typed: after "in" / "near" if there is one, otherwise the whole search
+  const v = qEl.value, m = v.match(/^(.*\b(?:in|near|around)\s+)(.*)$/i);
+  return m ? { before: m[1], frag: m[2] } : { before: "", frag: v };
+}
+function updateSuggest() {
+  const { before, frag } = sugFrag(), f = fold(frag).trim();
+  sugItems = [];
+  if (f.length >= 2) {
+    if (/^[a-z]{1,2}\d[a-z\d]?( ?\d[a-z]{2})?$/.test(f)) sugItems.push({ label: `Near ${frag.trim().toUpperCase()}`, value: frag.trim().toUpperCase(), hint: "postcode" });
+    const starts = (name) => fold(name).split(/[\s-]+/).some(w => w.startsWith(f)) || fold(name).startsWith(f);
+    for (const p of PLACES) {
+      const alias = p.a.find(x => starts(x));
+      if (fold(p.n) === f) continue; // already typed in full
+      if (starts(p.n) || alias) sugItems.push({ label: p.n, value: p.n, hint: alias && !starts(p.n) ? `“${alias}”` : (p.g === "Towns" ? "town" : `${p.g} Bristol`) });
+    }
+    sugItems.sort((x, y) => (fold(y.label).startsWith(f) - fold(x.label).startsWith(f)) || x.label.localeCompare(y.label));
+    sugItems = sugItems.slice(0, 6);
+  }
+  sugIdx = -1;
+  sug.hidden = !sugItems.length; qEl.setAttribute("aria-expanded", String(!!sugItems.length));
+  sug.innerHTML = sugItems.map((it, i) => `<li role="option" id="sg-${i}" data-i="${i}"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" fill="currentColor"/></svg><b>${esc(it.label)}</b><span>${esc(it.hint)}</span></li>`).join("");
+  sug.dataset.before = before;
+}
+function pickSuggest(i) {
+  const it = sugItems[i]; if (!it) return;
+  qEl.value = `${sug.dataset.before || ""}${it.value}`;
+  sug.hidden = true; qEl.setAttribute("aria-expanded", "false"); sugItems = [];
+  qEl.dispatchEvent(new Event("input", { bubbles: true }));
+  sug.hidden = true; qEl.setAttribute("aria-expanded", "false");
+}
+qEl.addEventListener("input", e => { if (e.isTrusted) updateSuggest(); });
+qEl.addEventListener("focus", updateSuggest);
+qEl.addEventListener("keydown", e => {
+  if (sug.hidden) return;
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault();
+    sugIdx = (sugIdx + (e.key === "ArrowDown" ? 1 : -1) + sugItems.length) % sugItems.length;
+    sug.querySelectorAll("li").forEach((li, i) => li.setAttribute("aria-selected", String(i === sugIdx)));
+    qEl.setAttribute("aria-activedescendant", `sg-${sugIdx}`);
+  } else if (e.key === "Enter" && sugIdx >= 0) { e.preventDefault(); pickSuggest(sugIdx); }
+  else if (e.key === "Escape") { sug.hidden = true; qEl.setAttribute("aria-expanded", "false"); }
+});
+sug.addEventListener("mousedown", e => { const li = e.target.closest("li"); if (li) { e.preventDefault(); pickSuggest(+li.dataset.i); } });
+qEl.addEventListener("blur", () => setTimeout(() => { sug.hidden = true; qEl.setAttribute("aria-expanded", "false"); }, 120));
+
 // postcodes (BS3, BS3 4AA) are looked up as you type, then act like a place
 let pcTimer = null;
 $("#q").addEventListener("input", () => {

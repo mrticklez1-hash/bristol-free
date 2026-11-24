@@ -688,3 +688,11 @@ a.tour-card:hover{color:var(--navy)}
 .pb-of{font-weight:600}
 .pb-clear{margin-left:auto;background:none;border:0;font:inherit;font-weight:700;color:var(--navy);text-decoration:underline;cursor:pointer;padding:6px}
 .pb-note{margin:8px 0 0;font-size:14px;color:var(--text-2)}
+
+/* suggestions under the search box */
+.field.has-suggest{position:relative}
+.suggest{position:absolute;left:0;right:0;top:100%;margin:6px 0 0;padding:6px;list-style:none;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 14px 32px rgba(15,42,68,.16);z-index:900}
+.suggest li{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:11px;cursor:pointer;font-size:15px;color:var(--navy)}
+.suggest li svg{color:#2F6FED;flex:none}
+.suggest li span{margin-left:auto;font-size:13px;color:var(--text-2);font-weight:500}
+.suggest li:hover,.suggest li[aria-selected="true"]{background:#EEF3FE}
