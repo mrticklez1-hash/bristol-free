@@ -1,7 +1,7 @@
 // Bristol Free & Affordable: makes the site installable, faster on repeat visits,
 // and shows a friendly page when there's no signal.
 // Pages, scripts and styles always try the network first, so a new deploy shows straight away.
-const VERSION = "bf-2026-11-22c";
+const VERSION = "bf-2026-11-24a";
 const CORE = ["/", "/offline.html", "/css/styles.css", "/img/logo-mark.svg", "/img/app/icon-192.png", "/manifest.webmanifest"];
 
 self.addEventListener("install", e => {
@@ -30,7 +30,7 @@ self.addEventListener("fetch", e => {
   const req = e.request, url = new URL(req.url);
   if (req.method !== "GET") return;
   // never cache the database, sign-in, card scanning, admin or map tiles
-  if (url.hostname.endsWith("supabase.co") || /\/(admin|staff|verify)\.html$|^\/v$/.test(url.pathname) || url.hostname.includes("openfreemap") || url.hostname.includes("openstreetmap")) return;
+  if (url.hostname.endsWith("supabase.co") || /\/(admin|staff|verify)(\.html)?$|^\/v$/.test(url.pathname) || url.hostname.includes("openfreemap") || url.hostname.includes("openstreetmap")) return;
   if (req.mode === "navigate") return e.respondWith(networkFirst(req, "/offline.html"));
   if (url.origin === location.origin) {
     if (/\.(png|jpe?g|webp|svg|gif|ico)$/i.test(url.pathname)) return e.respondWith(cacheFirst(req));

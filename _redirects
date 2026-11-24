@@ -1,0 +1,6 @@
+# Cloudflare Pages (and Netlify) read this file. Same rules as netlify.toml.
+# Cloudflare serves pages without ".html", so the targets leave it off.
+/place/*   /listing    200
+/recipe/*  /recipe     200
+/join      /interest   200
+/v         /verify     200
