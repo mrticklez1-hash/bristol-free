@@ -48,7 +48,7 @@ export function thumb(l) {
 
 export function card(l) {
   const c = CATS[l.category] || CATS.play;
-  return `<button class="card" data-id="${esc(l.id)}">${thumb(l)}<div class="body"><h3>${esc(l.name)}</h3><span class="sub">${esc(l.area)} · ${c.n}</span>${typeof l._dist === "number" ? `<span class="dist">${distText(l._dist)}${!l.address && !l.postcode ? " · area they cover" : ""}</span>` : ""}${l._fac?.length ? `<span class="card-fac">${l._fac.slice(0, 4).map(k => facBubble(k, 28, 16)).join("")}${l._fac.length > 4 ? `<b>+${l._fac.length - 4}</b>` : ""}</span>` : ""}${isFav(l.id) ? '<span class="card-saved" title="Saved">♥ Saved</span>' : ""}${l._deal ? `<span class="card-deal">${qrMark(18)}Family card deal</span>` : ""}${l.claimed ? "" : '<span class="unclaimed">Free listing · unclaimed</span>'}</div></button>`;
+  return `<button class="card" data-id="${esc(l.id)}">${thumb(l)}<div class="body"><h3>${esc(l.name)}</h3><span class="sub">${esc(l.area)} · ${c.n}</span>${typeof l._dist === "number" ? `<span class="dist">${l._from ? `${l._dist < 0.1 ? "Under 0.1" : l._dist.toFixed(1)} miles from ${esc(l._from)}` : distText(l._dist)}${!l.address && !l.postcode ? " · area they cover" : ""}</span>` : ""}${l._fac?.length ? `<span class="card-fac">${l._fac.slice(0, 4).map(k => facBubble(k, 28, 16)).join("")}${l._fac.length > 4 ? `<b>+${l._fac.length - 4}</b>` : ""}</span>` : ""}${isFav(l.id) ? '<span class="card-saved" title="Saved">♥ Saved</span>' : ""}${l._deal ? `<span class="card-deal">${qrMark(18)}Family card deal</span>` : ""}${l.claimed ? "" : '<span class="unclaimed">Free listing · unclaimed</span>'}</div></button>`;
 }
 
 export function distText(mi) {

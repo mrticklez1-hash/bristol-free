@@ -44,7 +44,7 @@
 <div class="wrap">
   <div class="page-head"><h1>Things to do</h1><p>Free and affordable places and activities across Bristol and nearby towns, filtered by what you want to spend.</p></div>
   <form class="filters" id="filters" role="search" onsubmit="return false">
-    <label class="field">Search<input type="search" name="q" id="q" placeholder="Name or keyword…"></label>
+    <label class="field">Search<input type="search" name="q" id="q" placeholder="e.g. cafés in Bedminster, or a postcode"></label>
     <label class="field">Where<select name="area" id="area"><option value="">Anywhere</option></select></label>
     <label class="field">Budget<select name="price" id="price"><option value="">Any price</option><option value="0">Free</option><option value="1">Under £5</option><option value="2">£5 to £10</option><option value="3">£10+</option></select></label>
     <label class="field">Ages<select name="age" id="age"><option value="">All ages</option><option value="baby">Babies (0–1)</option><option value="toddler">Toddlers (1–4)</option><option value="kids">Kids (5–11)</option><option value="teen">Teens (12+)</option></select></label>
@@ -56,6 +56,7 @@
     <span class="count" id="count" role="status" aria-live="polite"></span>
     <div class="tools-right"><button type="button" class="near saved-btn" id="saved-btn" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9.3-8.6C1 8.3 2.9 5 6.2 5c2 0 3.3 1 3.8 2.2h4C14.5 6 15.8 5 17.8 5 21.1 5 23 8.3 21.3 11.4 19 15.6 12 20 12 20Z" fill="currentColor"/></svg><span>My places</span></button><button type="button" class="near" id="near" aria-pressed="false"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20.6 3.4 3.9 10.2c-.8.3-.7 1.5.1 1.7l6.6 1.5 1.5 6.6c.2.8 1.4.9 1.7.1l6.8-16.7c.3-.7-.4-1.3-1-1Z" fill="currentColor"/></svg><span>Near me</span></button><div class="toggle" role="group" aria-label="View"><button type="button" id="v-both" aria-pressed="true">Map + list</button><button type="button" id="v-list" aria-pressed="false">List only</button></div></div>
   </div>
+  <div class="place-bar" id="place-bar" role="status" aria-live="polite" hidden></div>
   <p class="note near-note" id="near-note" role="status" hidden></p>
   <p class="note near-note" id="fac-note" role="status" hidden></p>
   <div id="map" role="region" aria-label="Map of places"></div>

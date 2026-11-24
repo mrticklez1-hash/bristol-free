@@ -47,8 +47,9 @@ export function startTour(all, box) {
 
   const go = async () => {
     if (!window.L) {
-      await load("link", { rel: "stylesheet", href: LEAFLET_CSS });
-      await load("script", { src: LEAFLET_JS });
+      // loaded exactly as the other map pages load it (checked and CORS-enabled), so the offline cache keeps one good copy
+      await load("link", { rel: "stylesheet", href: LEAFLET_CSS, integrity: "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=", crossOrigin: "" });
+      await load("script", { src: LEAFLET_JS, integrity: "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=", crossOrigin: "" });
     }
     const L = window.L;
     const map = L.map(box, { zoomControl: false, attributionControl: true, scrollWheelZoom: false, maxZoom: 19 })

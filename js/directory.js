@@ -3,6 +3,7 @@ import { fetchListings, AREAS, CATS, CAT_GROUPS, groupOf, listingCats, inCat, PR
 import { $, card, initHeader, openListing, wireModal, esc, qrMark, favourites } from "./ui.js";
 import { FACILITIES, FAC, facIcon, facilitiesIndex, yesKeys } from "./facilities.js";
 import { handleClaim } from "./claim.js";
+import { findPlace, findPostcode, fold } from "./places.js";
 
 initHeader();
 wireModal();
@@ -84,19 +85,86 @@ let all = [];
 let savedOnly = false;
 const facSel = new Set(new URLSearchParams(location.search).get("fac")?.split(",").filter(k => FAC[k]) || []);
 const rank = l => (l.featured ? 2 : 0) + (l.claimed ? 1 : 0);
+/* ---------- place search: "cafés in Bedminster" shows everything within a radius of Bedminster ---------- */
+let origin = null, pcOrigin = null, pcFor = "", radius = null, placeInfo = null, ring = null;
+const RADII = [1, 2, 5];
+const stem = w => (w.length > 3 && w.endsWith("s") ? w.slice(0, -1) : w);
+function textMatch(l, text) {
+  const words = fold(text).split(/[^a-z0-9']+/).filter(w => w.length > 1).map(stem);
+  if (!words.length) return true;
+  const hay = fold(`${l.name} ${l.description || ""} ${listingCats(l).map(k => `${k} ${CATS[k].n}`).join(" ")} ${l.area}`);
+  return words.every(w => hay.includes(w));
+}
+function readSearch() {
+  const q = $("#q").value.trim();
+  const pf = findPlace(q);
+  if (pf) return { origin: pf.place, text: pf.rest };
+  if (pcOrigin && pcFor === q) return { origin: pcOrigin, text: "" };
+  return { origin: null, text: q };
+}
 function filtered() {
   const favs = favourites();
-  const q = $("#q").value.toLowerCase().trim(), a = $("#area").value, p = $("#price").value, g = $("#age").value;
-  return all.filter(l =>
+  const a = $("#area").value, p = $("#price").value, g = $("#age").value;
+  const s = readSearch(); origin = s.origin;
+  const base = all.filter(l =>
     (activeCat ? inCat(l, activeCat) : !activeGroup || groupCats().some(k => inCat(l, k))) && (!a || l.area === a) && (p === "" || l.price_band === +p) &&
     (!g || (l.ages || []).includes(g)) &&
     [...facSel].every(k => l._fac?.includes(k)) &&
     (!savedOnly || favs.has(String(l.id))) &&
-    (!q || `${l.name} ${l.description || ""} ${listingCats(l).map(k => CATS[k].n).join(" ")} ${l.area}`.toLowerCase().includes(q))
-  ).sort(here
-    ? (x, y) => (x._dist ?? 1e9) - (y._dist ?? 1e9) || x.name.localeCompare(y.name)
-    : (x, y) => rank(y) - rank(x) || x.name.localeCompare(y.name));
+    textMatch(l, s.text)
+  );
+  all.forEach(l => { l._from = undefined; });
+  if (!origin) {
+    placeInfo = null; setDistances();
+    return base.sort(here
+      ? (x, y) => (x._dist ?? 1e9) - (y._dist ?? 1e9) || x.name.localeCompare(y.name)
+      : (x, y) => rank(y) - rank(x) || x.name.localeCompare(y.name));
+  }
+  const placed = base.filter(l => typeof l.lat === "number" && typeof l.lng === "number");
+  placed.forEach(l => { l._dist = miles(origin, l); l._from = origin.n; });
+  const start = origin.r || 1;
+  const tries = radius ? [radius] : RADII.filter(r => r >= start);
+  let used = tries[tries.length - 1], list = [];
+  for (const r of tries) { list = placed.filter(l => l._dist <= r); used = r; if (list.length >= 3) break; }
+  placeInfo = { name: origin.n, used, chosen: radius, widened: !radius && used > start, start, inStart: placed.filter(l => l._dist <= start).length,
+                mobile: base.length - placed.length };
+  return list.sort((x, y) => x._dist - y._dist || x.name.localeCompare(y.name));
 }
+const mi = r => `${r} mile${r === 1 ? "" : "s"}`;
+function renderPlaceBar() {
+  const bar = $("#place-bar");
+  bar.hidden = !placeInfo;
+  if (!placeInfo) return;
+  const P = placeInfo;
+  bar.innerHTML = `<div class="pb-row"><span class="pb-label"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" fill="currentColor"/></svg>Within</span>
+    ${RADII.map(r => `<button type="button" class="chip${P.used === r ? " on" : ""}" data-radius="${r}" aria-pressed="${P.used === r}">${mi(r)}</button>`).join("")}
+    <span class="pb-of">of <b>${esc(P.name)}</b></span><button type="button" class="pb-clear" id="pb-clear">Clear</button></div>
+    ${P.widened ? `<p class="pb-note">${P.inStart ? `Only ${P.inStart}` : "Nothing"} within ${mi(P.start)} of ${esc(P.name)}, so we're showing everything within ${mi(P.used)}.</p>` : ""}
+    ${P.mobile ? `<p class="pb-note">Plus ${P.mobile} that come to you, such as entertainers, not shown on the map.</p>` : ""}`;
+  bar.querySelectorAll("[data-radius]").forEach(b => b.addEventListener("click", () => { radius = +b.dataset.radius; render(); }));
+  $("#pb-clear").addEventListener("click", () => { $("#q").value = readSearch().text; pcOrigin = null; radius = null; render(); });
+}
+function drawRing() {
+  if (!map || !window.L) return;
+  if (ring) { map.removeLayer(ring); ring = null; }
+  if (!origin || !placeInfo) return;
+  ring = L.layerGroup([
+    L.circle([origin.lat, origin.lng], { radius: placeInfo.used * 1609.34, color: "#2F6FED", weight: 2, fillColor: "#2F6FED", fillOpacity: .06, dashArray: "6 6", interactive: false }),
+    L.circleMarker([origin.lat, origin.lng], { radius: 6, color: "#fff", weight: 2, fillColor: "#2F6FED", fillOpacity: 1 }).bindTooltip(origin.n),
+  ]).addTo(map);
+  map.fitBounds(L.latLng(origin.lat, origin.lng).toBounds(placeInfo.used * 1609.34 * 2), { padding: [20, 20] });
+}
+// postcodes (BS3, BS3 4AA) are looked up as you type, then act like a place
+let pcTimer = null;
+$("#q").addEventListener("input", () => {
+  radius = null;
+  const q = $("#q").value.trim();
+  clearTimeout(pcTimer);
+  if (/^[A-Za-z]{1,2}\d[A-Za-z\d]?( ?\d[A-Za-z]{2})?$/.test(q)) pcTimer = setTimeout(async () => {
+    const o = await findPostcode(q);
+    if (o && $("#q").value.trim() === q) { pcOrigin = o; pcFor = q; render(); }
+  }, 350);
+});
 function renderChips() {
   const chip = (attr, on, label) => `<button type="button" class="chip${on ? " on" : ""}" ${attr} aria-pressed="${on}">${esc(label)}</button>`;
   $("#chips").innerHTML = chip('data-group=""', !activeGroup, "All") +
@@ -126,7 +194,7 @@ function render() {
   $("#results").innerHTML = list.length ? list.map(card).join("") :
     (savedOnly ? '<div class="empty">No saved places yet. Open any listing and tap <b>Save</b> to keep it here. Saved places stay on this phone or computer.</div>'
     : '<div class="empty">No matches yet. Try another area, budget or category.<br><br><a class="btn ghost" href="/business.html">Suggest a place</a></div>');
-  renderMap(list); syncUrl();
+  renderMap(list); renderPlaceBar(); drawRing(); syncUrl();
 }
 
 $("#saved-btn").addEventListener("click", e => { savedOnly = !savedOnly; e.currentTarget.setAttribute("aria-pressed", String(savedOnly)); render(); });

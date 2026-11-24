@@ -678,3 +678,13 @@ a.tour-card:hover{color:var(--navy)}
 .tour-body em{font-style:normal;font-weight:800;color:#2F6FED;margin-top:4px}
 @media(max-width:860px){.explore{grid-template-columns:1fr;gap:22px}#tour-map{height:340px}.tour-float{width:280px}.tour-img{height:118px}.tour-body .tour-desc{display:none}}
 @media(prefers-reduced-motion:reduce){.tour-float{transition:none}}
+
+/* place search: "Within 1 mile / 2 miles / 5 miles of Bedminster" */
+.place-bar{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px 14px;margin:0 0 14px}
+.pb-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.pb-label{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:#2F6FED}
+.place-bar .chip{min-height:38px;padding:6px 14px;font-size:14px}
+.place-bar .chip.on{background:#2F6FED;border-color:#2F6FED;color:#fff}
+.pb-of{font-weight:600}
+.pb-clear{margin-left:auto;background:none;border:0;font:inherit;font-weight:700;color:var(--navy);text-decoration:underline;cursor:pointer;padding:6px}
+.pb-note{margin:8px 0 0;font-size:14px;color:var(--text-2)}

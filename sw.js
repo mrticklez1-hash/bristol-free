@@ -1,7 +1,7 @@
 // Bristol Free & Affordable: makes the site installable, faster on repeat visits,
 // and shows a friendly page when there's no signal.
 // Pages, scripts and styles always try the network first, so a new deploy shows straight away.
-const VERSION = "bf-2026-11-22b";
+const VERSION = "bf-2026-11-22c";
 const CORE = ["/", "/offline.html", "/css/styles.css", "/img/logo-mark.svg", "/img/app/icon-192.png", "/manifest.webmanifest"];
 
 self.addEventListener("install", e => {
@@ -19,8 +19,9 @@ function networkFirst(req, fallback) {
   }).catch(() => caches.match(req, { ignoreSearch: req.mode === "navigate" }).then(r => r || (fallback ? caches.match(fallback) : Response.error())));
 }
 function cacheFirst(req) {
-  return caches.match(req).then(hit => hit || fetch(req).then(res => {
-    if (res.ok || res.type === "opaque") { const copy = res.clone(); caches.open(VERSION + "-assets").then(c => c.put(req, copy)); }
+  // only ever keep full, readable copies: a sealed ("opaque") copy can't be reused by a page that checks the file
+  return caches.match(req).then(hit => (hit && hit.type !== "opaque") ? hit : fetch(req).then(res => {
+    if (res.ok && res.type !== "opaque") { const copy = res.clone(); caches.open(VERSION + "-assets").then(c => c.put(req, copy)); }
     return res;
   }));
 }
