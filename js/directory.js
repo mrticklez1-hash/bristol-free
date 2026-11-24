@@ -3,15 +3,23 @@ import { fetchListings, AREAS, CATS, CAT_GROUPS, groupOf, listingCats, inCat, PR
 import { $, card, initHeader, openListing, wireModal, esc, qrMark, favourites } from "./ui.js";
 import { FACILITIES, FAC, facIcon, facilitiesIndex, yesKeys } from "./facilities.js";
 import { handleClaim } from "./claim.js";
-import { findPlace, findPostcode, fold } from "./places.js";
+import { findPlace, findPostcode, fold, PLACES, PLACE_GROUPS } from "./places.js";
 
 initHeader();
 wireModal();
 
 const params = new URLSearchParams(location.search);
-$("#area").insertAdjacentHTML("beforeend", AREAS.map(a => `<option>${esc(a)}</option>`).join(""));
+// "Where": the four Bristol areas as a whole, then every neighbourhood and town (those search within a radius)
+const BIG = ["Central Bristol", "North Bristol", "South Bristol", "East Bristol"];
+$("#area").insertAdjacentHTML("beforeend",
+  `<optgroup label="Whole areas">${BIG.map(a => `<option value="area:${esc(a)}">${esc(a)} (all of it)</option>`).join("")}</optgroup>` +
+  PLACE_GROUPS.map(g => `<optgroup label="${g === "Towns" ? "Towns and villages" : `${g} Bristol`}">${PLACES.filter(p => p.g === g).sort((x, y) => x.n.localeCompare(y.n)).map(p => `<option value="place:${esc(p.n)}">${esc(p.n)}</option>`).join("")}</optgroup>`).join(""));
+const placeByName = n => PLACES.find(p => p.n.toLowerCase() === String(n || "").toLowerCase());
 $("#q").value = params.get("q") || "";
-$("#area").value = AREAS.includes(params.get("area")) ? params.get("area") : "";
+{ // ?place=Bedminster, or ?area= from the home page chips (a town opens as a place, a Bristol area as the whole area)
+  const pl = placeByName(params.get("place")) || placeByName(params.get("area"));
+  $("#area").value = pl ? `place:${pl.n}` : BIG.includes(params.get("area")) ? `area:${params.get("area")}` : "";
+}
 $("#price").value = ["0", "1", "2", "3"].includes(params.get("price")) ? params.get("price") : "";
 $("#age").value = ["baby", "toddler", "kids", "teen"].includes(params.get("age")) ? params.get("age") : "";
 let activeCat = CATS[params.get("cat")] ? params.get("cat") : "";
@@ -104,8 +112,9 @@ function readSearch() {
 }
 function filtered() {
   const favs = favourites();
-  const a = $("#area").value, p = $("#price").value, g = $("#age").value;
-  const s = readSearch(); origin = s.origin;
+  const where = $("#area").value, p = $("#price").value, g = $("#age").value;
+  const a = where.startsWith("area:") ? where.slice(5) : "";
+  const s = readSearch(); origin = s.origin || (where.startsWith("place:") ? placeByName(where.slice(6)) : null);
   const base = all.filter(l =>
     (activeCat ? inCat(l, activeCat) : !activeGroup || groupCats().some(k => inCat(l, k))) && (!a || l.area === a) && (p === "" || l.price_band === +p) &&
     (!g || (l.ages || []).includes(g)) &&
@@ -142,7 +151,7 @@ function renderPlaceBar() {
     ${P.widened ? `<p class="pb-note">${P.inStart ? `Only ${P.inStart}` : "Nothing"} within ${mi(P.start)} of ${esc(P.name)}, so we're showing everything within ${mi(P.used)}.</p>` : ""}
     ${P.mobile ? `<p class="pb-note">Plus ${P.mobile} that come to you, such as entertainers, not shown on the map.</p>` : ""}`;
   bar.querySelectorAll("[data-radius]").forEach(b => b.addEventListener("click", () => { radius = +b.dataset.radius; render(); }));
-  $("#pb-clear").addEventListener("click", () => { $("#q").value = readSearch().text; pcOrigin = null; radius = null; render(); });
+  $("#pb-clear").addEventListener("click", () => { $("#q").value = readSearch().text; $("#area").value = ""; pcOrigin = null; radius = null; render(); });
 }
 function drawRing() {
   if (!map || !window.L) return;
@@ -177,7 +186,8 @@ function renderChips() {
 function syncUrl() {
   const u = new URLSearchParams();
   if ($("#q").value.trim()) u.set("q", $("#q").value.trim());
-  if ($("#area").value) u.set("area", $("#area").value);
+  const where = $("#area").value;
+  if (where.startsWith("area:")) u.set("area", where.slice(5)); else if (where.startsWith("place:")) u.set("place", where.slice(6));
   if ($("#price").value) u.set("price", $("#price").value);
   if ($("#age").value) u.set("age", $("#age").value);
   if (activeCat) u.set("cat", activeCat); else if (activeGroup) u.set("group", activeGroup);
@@ -210,6 +220,7 @@ $("#fac-chips").addEventListener("click", e => {
 });
 $("#chips").addEventListener("click", e => { const b = e.target.closest("[data-group]"); if (!b) return; activeGroup = b.dataset.group; activeCat = ""; renderChips(); render(); });
 $("#subchips").addEventListener("click", e => { const b = e.target.closest("[data-cat]"); if (!b) return; activeCat = b.dataset.cat; renderChips(); render(); });
+$("#area").addEventListener("input", () => { radius = null; });
 ["#q", "#area", "#price", "#age"].forEach(s => $(s).addEventListener("input", render));
 $("#results").addEventListener("click", e => {
   const b = e.target.closest(".card[data-id]"); if (!b) return;
