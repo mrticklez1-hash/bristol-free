@@ -725,3 +725,13 @@ a.ev-media { text-decoration: none; color: inherit; }
 .photo-sheet img { display: block; width: 100%; max-height: 86vh; object-fit: contain; }
 .photo-sheet .x { position: absolute; right: 10px; top: 10px; z-index: 1; background: #fff; }
 .ev-hero.ev-noimg { aspect-ratio: 3 / 1; }
+/* "Also coming up" on event pages: pastel cards with the photo on top, like What's on */
+.ev-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+.ev.ev-card { flex-direction: column; gap: 0; padding: 0; overflow: hidden; color: inherit; transition: transform .15s, box-shadow .15s; }
+.ev.ev-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15,42,68,.12); }
+.ev-card .ev-img { position: relative; width: 100%; height: auto; aspect-ratio: 16 / 10; border-radius: 0; }
+.ev-card .ev-date { position: absolute; left: 12px; top: 12px; width: 52px; height: 56px; border-radius: 14px; box-shadow: 0 4px 12px rgba(15,42,68,.15); }
+.ev-card .ev-date b { font-size: 22px; }
+.ev-card .ev-date span { font-size: 11px; }
+.ev-card .ev-body { padding: 14px 16px 16px; }
+@media (max-width: 640px) { .ev-cards { grid-template-columns: 1fr 1fr; gap: 12px; } .ev-card .ev-body { padding: 10px 12px 12px; } .ev-card .ev-body h3 { font-size: 16px; } }
