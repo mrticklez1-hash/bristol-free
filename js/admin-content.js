@@ -1,5 +1,5 @@
 // Admin: What's on, Deals, Recipes, Suggestions and Members.
-import { DEMO, AREAS, PRICE } from "./data.js";
+import { DEMO, AREAS, PRICE, eventUrl } from "./data.js";
 import { compressImage } from "./compress.js";
 import { DEMO_EVENTS, DEMO_DEALS, DEMO_RECIPES } from "./demo-extra.js";
 import { $, esc } from "./ui.js";
@@ -34,7 +34,7 @@ const TYPES = {
     form: () => `
       <label class="field">Event name<input name="title" required maxlength="200"></label>
       <div class="claim-two"><label class="field">Linked listing (optional)<select name="listing_id">${listingOptions()}</select></label><label class="field">Area<select name="area">${areaOptions()}</select></label></div>
-      <label class="field">Venue<input name="venue" maxlength="200" placeholder="e.g. Central Library, College Green"></label>
+      <div class="claim-two"><label class="field">Venue<input name="venue" maxlength="200" placeholder="e.g. Central Library, College Green"></label><label class="field">Postcode <span class="sub">(for the map if it's not a linked listing)</span><input name="postcode" maxlength="10" placeholder="e.g. BS3 4EA"></label></div>
       <div class="claim-two"><label class="field">Date<input name="date" type="date" required></label><label class="field">Repeats weekly until (leave blank for a one-off)<input name="repeat_until" type="date"></label></div>
       <div class="claim-two"><label class="field">Starts<input name="start" type="time"></label><label class="field">Ends<input name="end" type="time"></label></div>
       <div class="claim-two"><label class="field">Price<select name="price_band">${priceOptions()}</select></label><label class="field">Price details (optional)<input name="price_note" maxlength="120" placeholder="e.g. £3 per child, under-2s free"></label></div>
@@ -44,7 +44,7 @@ const TYPES = {
       <div class="claim-two"><label class="field">Photo <span class="sub">(optional; otherwise the linked listing's photo is used)</span><input type="file" name="file" accept="image/jpeg,image/png,image/webp"></label><label class="field">…or photo link<input name="image_url" maxlength="500"></label></div>`,
     fill: (f, v) => {
       const at = v.starts_at ? new Date(v.starts_at) : null, end = v.ends_at ? new Date(v.ends_at) : null;
-      set(f, { title: v.title, listing_id: v.listing_id || "", area: v.area || AREAS[0], venue: v.venue, date: at ? localDate(at) : v.date || "", start: at ? localTime(at) : v.time || "", end: end ? localTime(end) : "", repeat_until: v.repeat_until || "", price_band: String(v.price_band ?? 0), price_note: v.price_note, description: v.description, website: v.website, image_url: v.image_url });
+      set(f, { title: v.title, listing_id: v.listing_id || "", area: v.area || AREAS[0], venue: v.venue, postcode: v.postcode, date: at ? localDate(at) : v.date || "", start: at ? localTime(at) : v.time || "", end: end ? localTime(end) : "", repeat_until: v.repeat_until || "", price_band: String(v.price_band ?? 0), price_note: v.price_note, description: v.description, website: v.website, image_url: v.image_url });
       f.querySelectorAll("input[name=ages]").forEach(c => c.checked = (v.ages || []).includes(c.value));
     },
     read: (f, d) => {
@@ -53,11 +53,11 @@ const TYPES = {
       const starts = new Date(`${d.date}T${d.start || "00:00"}`), ends = d.end ? new Date(`${d.date}T${d.end}`) : null;
       if (ends && ends < starts) return "The end time is before the start time.";
       if (d.repeat_until && d.repeat_until < d.date) return "'Repeats weekly until' is before the first date.";
-      return { title: d.title, listing_id: d.listing_id || null, area: d.area, venue: d.venue || null, starts_at: starts.toISOString(), ends_at: ends ? ends.toISOString() : null, repeat_until: d.repeat_until || null, price_band: +d.price_band, price_note: d.price_note || null, ages: [...f.querySelectorAll("input[name=ages]:checked")].map(c => c.value), description: d.description || null, website: fixUrl(d.website), image_url: d.image_url || null };
+      return { title: d.title, listing_id: d.listing_id || null, area: d.area, venue: d.venue || null, postcode: d.postcode || null, starts_at: starts.toISOString(), ends_at: ends ? ends.toISOString() : null, repeat_until: d.repeat_until || null, price_band: +d.price_band, price_note: d.price_note || null, ages: [...f.querySelectorAll("input[name=ages]:checked")].map(c => c.value), description: d.description || null, website: fixUrl(d.website), image_url: d.image_url || null };
     },
     row: v => {
       const past = new Date(v.repeat_until ? v.repeat_until + "T23:59" : v.ends_at || v.starts_at) < new Date();
-      return { cls: past ? "past" : "", title: v.title, sub: `${fmt(v.starts_at)}${v.repeat_until ? `, weekly until ${new Date(v.repeat_until).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}` : ""} · ${v.venue ? v.venue + " · " : ""}${v.area}`, badges: (past ? '<span class="badge">Past</span>' : "") + (v.price_band === 0 ? '<span class="badge open">Free</span>' : "") };
+      return { cls: past ? "past" : "", link: eventUrl(v), title: v.title, sub: `${fmt(v.starts_at)}${v.repeat_until ? `, weekly until ${new Date(v.repeat_until).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}` : ""} · ${v.venue ? v.venue + " · " : ""}${v.area}`, badges: (past ? '<span class="badge">Past</span>' : "") + (v.price_band === 0 ? '<span class="badge open">Free</span>' : "") };
     },
     sort: (a, b) => new Date(a.starts_at) - new Date(b.starts_at),
   },
@@ -369,7 +369,7 @@ document.addEventListener("click", async e => {
     const s = store.suggestions.find(x => x.id === u.dataset.use), d = s.data || {};
     let image_url = "";
     if (d.photo) { u.disabled = true; u.textContent = "Copying photo…"; try { image_url = await copySuggestionPhoto(d.photo); } catch { alert("Couldn't copy their photo. You can add one in the editor."); } u.disabled = false; u.textContent = `Add as ${s.kind}`; }
-    if (s.kind === "event") openEditor("events", { image_url, title: d.title, date: d.date, time: d.time, venue: d.venue, area: d.area, price_band: !d.price || /free/i.test(d.price) ? 0 : 1, price_note: d.price && !/^free$/i.test(d.price) ? d.price : "", website: d.website, description: d.details, status: "draft" }, s.id);
+    if (s.kind === "event") openEditor("events", { image_url, title: d.title, date: d.date, time: d.time, venue: d.venue, postcode: d.postcode, area: d.area, price_band: !d.price || /free/i.test(d.price) ? 0 : 1, price_note: d.price && !/^free$/i.test(d.price) ? d.price : "", website: d.website, description: d.details, status: "draft" }, s.id);
     else openEditor("deals", { business_name: d.business, area: d.area, offer: d.offer, details: d.details, website: d.website, members_only: true, status: "draft" }, s.id);
     if (s.kind === "event" && d.weekly) showErr("They said this happens every week: set 'Repeats weekly until'.");
     return;
@@ -394,12 +394,31 @@ document.addEventListener("click", async e => {
   const up = e.target.closest("[data-unpause]"); if (up) return setMember(up.dataset.unpause, "active");
 });
 
+/* ---------- old event photos ----------
+   Every night the database retires photos of events that finished over 30 days ago
+   (update-22) and lists them in event_photo_trash. Only the storage API can delete the
+   files themselves, so admin does it quietly whenever it's opened. */
+async function emptyPhotoTrash() {
+  if (DEMO || !client) return;
+  try {
+    const { data, error } = await client.from("event_photo_trash").select("path").limit(500);
+    if (error || !data?.length) return;
+    for (let i = 0; i < data.length; i += 100) {
+      const paths = data.slice(i, i + 100).map(r => r.path);
+      const { error: e2 } = await client.storage.from("listing-images").remove(paths);
+      if (e2) return;
+      await client.from("event_photo_trash").delete().in("path", paths);
+    }
+  } catch { /* try again next time */ }
+}
+
 /* ---------- start once admin.js has signed in ---------- */
 async function init(detail) {
   if (client !== null || (!DEMO && !detail.client)) return;
   client = detail.client || false; listings = detail.listings || [];
   await Promise.all([...["events", "deals", "recipes", "suggestions", "members"].map(load), loadUsage(), loadInvites()]);
   ["events", "deals", "recipes"].forEach(renderList); renderSugg(); renderMembers(); renderKeys(); renderInvites();
+  emptyPhotoTrash();
 }
 if (window.__admin) init(window.__admin);
 window.addEventListener("admin-ready", e => init(e.detail));

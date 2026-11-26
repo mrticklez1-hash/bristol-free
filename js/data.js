@@ -97,12 +97,28 @@ export async function fetchListing(slug) {
 
 /* ---------- What's on, deals, recipes, suggestions ---------- */
 
+const EVENT_COLS = "*, listing:listings(name, slug, area, image_url, lat, lng, address, postcode)";
+const MON = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+// Matches the database's own slugs (update-22); used for demo events and any event saved before update-22.
+const demoSlug = e => { const d = new Date(e.starts_at); return `${slugify(e.title).slice(0, 70)}-${d.getDate()}-${MON[d.getMonth()]}`; };
+// An event's own page. For weekly events, ?d= picks which week was clicked.
+export const eventUrl = (e, at) => `/event/${encodeURIComponent(e.slug || demoSlug(e))}${at && e.repeat_until ? `?d=${at.getFullYear()}-${String(at.getMonth() + 1).padStart(2, "0")}-${String(at.getDate()).padStart(2, "0")}` : ""}`;
+
+export async function fetchEvent(slug) {
+  if (DEMO) return DEMO_EVENTS.find(e => demoSlug(e) === slug) || null;
+  const c = await sb();
+  const { data, error } = await c.from("events").select(EVENT_COLS).eq("slug", slug).eq("status", "published").maybeSingle();
+  if (!error) return data;
+  // before update-22 is run there's no slug column: match on title and date instead
+  return (await fetchEvents()).find(e => demoSlug(e) === slug) || null;
+}
+
 export async function fetchEvents() {
   if (DEMO) return DEMO_EVENTS;
   const c = await sb();
   const since = new Date(Date.now() - 86400000).toISOString();
   const { data, error } = await c.from("events")
-    .select("*, listing:listings(name, slug, area, image_url)")
+    .select(EVENT_COLS)
     .eq("status", "published")
     .or(`starts_at.gte.${since},repeat_until.gte.${since.slice(0, 10)}`)
     .order("starts_at");

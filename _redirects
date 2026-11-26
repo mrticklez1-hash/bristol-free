@@ -2,5 +2,6 @@
 # Cloudflare serves pages without ".html", so the targets leave it off.
 /place/*   /listing    200
 /recipe/*  /recipe     200
+/event/*   /event      200
 /join      /interest   200
 /v         /verify     200

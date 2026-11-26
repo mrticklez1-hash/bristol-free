@@ -1,4 +1,4 @@
-import { fetchListings, fetchEvents, fetchDeals, fetchRecipes, occurrences, AREAS, CATS, CAT_GROUPS, PRICE, listingUrl, dealIndex } from "./data.js";
+import { fetchListings, fetchEvents, fetchDeals, fetchRecipes, occurrences, AREAS, CATS, CAT_GROUPS, PRICE, listingUrl, eventUrl, dealIndex } from "./data.js";
 import { facilitiesIndex, yesKeys } from "./facilities.js";
 import { $, card, initHeader, openListing, wireModal, esc, dealCard, recipeCard } from "./ui.js";
 import { handleClaim } from "./claim.js";
@@ -41,7 +41,7 @@ const today = new Date(); today.setHours(0, 0, 0, 0);
 fetchEvents().then(ev => {
   const week = new Date(today.getTime() + 8 * 86400000);
   const list = occurrences(ev, new Date(), week).slice(0, 4);
-  $("#h-events").innerHTML = list.length ? `<div class="ev-strip">${list.map(o => `<a class="ev mini" href="/whats-on.html">
+  $("#h-events").innerHTML = list.length ? `<div class="ev-strip">${list.map(o => `<a class="ev mini" href="${eventUrl(o, o.at)}">
     <div class="ev-date" aria-hidden="true"><b>${o.at.getDate()}</b><span>${o.at.toLocaleDateString("en-GB", { month: "short" })}</span></div>
     <div class="ev-body"><h3>${esc(o.title)}</h3><span class="sub">${o.at.toLocaleDateString("en-GB", { weekday: "short" })} ${o.at.getHours() % 12 || 12}${o.at.getMinutes() ? ":" + String(o.at.getMinutes()).padStart(2, "0") : ""}${o.at.getHours() < 12 ? "am" : "pm"} · ${esc(o.area)}</span>
     ${o.price_band === 0 ? '<span class="tagpill free">Free</span>' : `<span class="tagpill">${esc(o.price_note || PRICE[o.price_band])}</span>`}</div></a>`).join("")}</div>`

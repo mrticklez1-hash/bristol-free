@@ -16,13 +16,16 @@ const FORMS = {
       <label class="check"><input type="checkbox" name="weekly"> It happens every week</label>
       <div class="two">
         <label class="field">Venue<input name="venue" maxlength="200"></label>
-        <label class="field">Area<select name="area">${AREAS.map(a => `<option>${esc(a)}</option>`).join("")}</select></label>
+        <label class="field">Postcode (optional)<input name="postcode" maxlength="10" autocomplete="off" placeholder="e.g. BS3 4EA"></label>
       </div>
-      <label class="field">Price<input name="price" maxlength="120" placeholder="e.g. Free, or £3 per child"></label>
+      <div class="two">
+        <label class="field">Area<select name="area">${AREAS.map(a => `<option>${esc(a)}</option>`).join("")}</select></label>
+        <label class="field">Price<input name="price" maxlength="120" placeholder="e.g. Free, or £3 per child"></label>
+      </div>
       <label class="field">Link for more info (optional)<input name="website" maxlength="300" placeholder="https://…"></label>
       <label class="field">Anything else? (optional)<textarea name="details" rows="3" maxlength="1500"></textarea></label>
-      <label class="field">Photo (optional)<input type="file" name="photo" accept="image/jpeg,image/png,image/webp"><span class="note" style="font-weight:400;display:block;margin-top:6px">A photo helps your event stand out. We check every photo before it goes on the site.</span></label>
-      <label class="check sg-photo-ok" hidden><input type="checkbox" name="photo_ok"> I took this photo, or I have permission to share it</label>`,
+      <label class="field">Photo (optional)<input type="file" name="photo" accept="image/jpeg,image/png,image/webp"><span class="note" style="font-weight:400;display:block;margin-top:6px">A photo helps your event stand out and is shown big on the event's page. We check every photo before it goes on the site.</span></label>
+      <label class="check sg-photo-ok" hidden><input type="checkbox" name="photo_ok"> I took this photo or have permission to share it, and anyone who can be recognised in it (or their parent, for children) is happy for it to be on the site</label>`,
     check: d => !d.title ? "Please add the event name." : !d.date ? "Please add the date." : "",
   },
   deal: {

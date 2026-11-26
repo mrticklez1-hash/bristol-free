@@ -696,3 +696,32 @@ a.tour-card:hover{color:var(--navy)}
 .suggest li svg{color:#2F6FED;flex:none}
 .suggest li span{margin-left:auto;font-size:13px;color:var(--text-2);font-weight:500}
 .suggest li:hover,.suggest li[aria-selected="true"]{background:#EEF3FE}
+
+/* ---------- event pages ---------- */
+.ev-hero { background: var(--tone); }
+.ev-zoom { position: absolute; inset: 0; padding: 0; border: 0; background: none; cursor: zoom-in; }
+.ev-zoom img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ev-zoom-tag { position: absolute; right: 14px; bottom: 14px; padding: 6px 12px; border-radius: 12px; background: rgba(15,42,68,.72); color: #fff; font-weight: 700; font-size: 13px; }
+.ev-date-big { position: absolute; left: 18px; top: 18px; width: 72px; height: 78px; border-radius: 18px; box-shadow: 0 6px 18px rgba(15,42,68,.2); z-index: 1; }
+.ev-date-big b { font-size: 30px; }
+.ev-date-big span { font-size: 13px; }
+.ev-hero .tagpill { position: absolute; left: auto; right: 16px; top: 16px; bottom: auto; width: auto; z-index: 1; }
+.ev-page .lp-actions .cal-add { margin-left: 0; }
+.ev-page .lp-actions .cal-add .dir-menu { left: 0; right: auto; }
+.ev-over { margin-top: 16px; padding: 14px 18px; border-radius: 16px; background: #FFF1D6; color: #5A3B00; }
+.ev-gone { margin: 30px 0; padding: 30px; text-align: center; display: grid; gap: 12px; justify-items: center; }
+.ev-gone h1 { font-size: clamp(28px, 4vw, 40px); }
+.ev-page .lp-actions .cal-add { position: relative; }
+.ev-page .lp-actions .cal-add > summary { display: inline-flex; align-items: center; min-height: 48px; padding: 13px 20px; border-radius: 12px; border: 1px solid var(--line); background: #fff; font-weight: 700; color: var(--navy); text-decoration: none; list-style: none; cursor: pointer; }
+.ev-page .lp-actions .cal-add > summary:hover { border-color: var(--navy-2); }
+.ev-page .lp-actions .cal-add > summary::-webkit-details-marker { display: none; }
+.ev-next-h { font-size: 15px; margin: 16px 0 8px; }
+.ev-next { gap: 8px; flex-wrap: wrap; }
+.ev-link { color: inherit; text-decoration: none; }
+.ev-link:hover { text-decoration: underline; }
+a.ev-media { text-decoration: none; color: inherit; }
+.ev-tone .ev-body p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.photo-sheet { max-width: min(1100px, 96vw); background: #0F2A44; border-radius: 20px; }
+.photo-sheet img { display: block; width: 100%; max-height: 86vh; object-fit: contain; }
+.photo-sheet .x { position: absolute; right: 10px; top: 10px; z-index: 1; background: #fff; }
+.ev-hero.ev-noimg { aspect-ratio: 3 / 1; }

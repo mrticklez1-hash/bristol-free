@@ -1,4 +1,5 @@
-import { fetchEvents, occurrences, AREAS, PRICE, listingUrl } from "./data.js";
+import { fetchEvents, occurrences, AREAS, PRICE, listingUrl, eventUrl } from "./data.js";
+import { fmtDay, fmtTime, hasTime, downloadIcs, calMenu } from "./event-cal.js";
 import { $, esc, initHeader, safeUrl, ageText } from "./ui.js";
 import { openSuggest } from "./suggest.js";
 
@@ -9,8 +10,6 @@ $("#suggest-event").addEventListener("click", () => openSuggest("event"));
 const today = new Date(); today.setHours(0, 0, 0, 0);
 const horizon = new Date(today); horizon.setDate(horizon.getDate() + 120);
 const key = d => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-const fmtDay = d => d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
-const fmtTime = d => { const h = d.getHours(), m = d.getMinutes(); return `${h % 12 || 12}${m ? ":" + String(m).padStart(2, "0") : ""}${h < 12 ? "am" : "pm"}`; };
 
 let all = [], picked = null, month = new Date(today.getFullYear(), today.getMonth(), 1);
 try { all = occurrences(await fetchEvents(), today, horizon); }
@@ -39,28 +38,10 @@ function renderCal(list) {
 
 /* ---------- add to calendar ---------- */
 const shownOcc = [];
-const pad = n => String(n).padStart(2, "0");
-const icsTime = d => `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
-const endOf = o => o.end || new Date(o.at.getTime() + 60 * 60 * 1000);
-const where = o => [o.venue || o.listing?.name, o.area].filter(Boolean).join(", ");
-function gcalUrl(o) {
-  const p = new URLSearchParams({ action: "TEMPLATE", text: o.title, dates: `${icsTime(o.at)}/${icsTime(endOf(o))}`, details: [o.description, o.website].filter(Boolean).join("\n\n"), location: where(o) });
-  return `https://calendar.google.com/calendar/render?${p}`;
-}
-function icsEscape(s) { return String(s || "").replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/([,;])/g, "\\$1"); }
-function downloadIcs(o) {
-  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Bristol Free & Affordable//EN", "BEGIN:VEVENT",
-    `UID:${o.id || "ev"}-${icsTime(o.at)}@bristolfree`, `DTSTAMP:${icsTime(new Date())}`, `DTSTART:${icsTime(o.at)}`, `DTEND:${icsTime(endOf(o))}`,
-    `SUMMARY:${icsEscape(o.title)}`, `LOCATION:${icsEscape(where(o))}`, `DESCRIPTION:${icsEscape([o.description, o.website].filter(Boolean).join("\n\n"))}`,
-    "END:VEVENT", "END:VCALENDAR"];
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([lines.join("\r\n")], { type: "text/calendar" }));
-  a.download = (o.title || "event").replace(/[^a-z0-9]+/gi, "-").toLowerCase() + ".ics"; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-}
+const pageOf = o => new URL(eventUrl(o, o.at), location.origin).href;
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-ics]"); if (!b) return;
-  downloadIcs(shownOcc[+b.dataset.ics]); b.closest("details").open = false;
+  const o = shownOcc[+b.dataset.ics]; downloadIcs(o, pageOf(o)); b.closest("details").open = false;
 });
 
 const EV_TONES = ["mint", "lavender", "peach", "sky", "butter", "pink", "periwinkle"];
@@ -69,17 +50,16 @@ function eventRow(o, n = 0) {
   const place = o.listing ? `<a href="${listingUrl(o.listing)}">${esc(o.venue || o.listing.name)}</a>` : esc(o.venue || "");
   const price = o.price_band === 0 ? '<span class="tagpill free">Free</span>' : `<span class="tagpill">${esc(o.price_note || PRICE[o.price_band])}</span>`;
   const img = safeUrl(o.image_url) || safeUrl(o.listing?.image_url);
+  const page = eventUrl(o, o.at);
   return `<article class="ev ev-tone t-${EV_TONES[n % EV_TONES.length]}${n % 2 ? " ev-flip" : ""}">
-    <div class="ev-media"><div class="ev-img">${img ? `<img src="${esc(img)}" alt="" loading="lazy" decoding="async">` : '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#0F2A44" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12 13.2l.9 1.8 2 .3-1.45 1.4.35 2-1.8-.95-1.8.95.35-2L9.1 15.3l2-.3z"/></svg>'}</div>
-    <div class="ev-date" aria-hidden="true"><b>${o.at.getDate()}</b><span>${o.at.toLocaleDateString("en-GB", { month: "short" })}</span></div></div>
+    <a class="ev-media" href="${page}" tabindex="-1" aria-hidden="true"><div class="ev-img">${img ? `<img src="${esc(img)}" alt="" loading="lazy" decoding="async">` : '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#0F2A44" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12 13.2l.9 1.8 2 .3-1.45 1.4.35 2-1.8-.95-1.8.95.35-2L9.1 15.3l2-.3z"/></svg>'}</div>
+    <div class="ev-date" aria-hidden="true"><b>${o.at.getDate()}</b><span>${o.at.toLocaleDateString("en-GB", { month: "short" })}</span></div></a>
     <div class="ev-body">
-      <h3>${esc(o.title)}</h3>
-      <span class="sub">${fmtTime(o.at)}${o.end ? `–${fmtTime(o.end)}` : ""}${place ? ` · ${place}` : ""} · ${esc(o.area)}</span>
+      <h3><a class="ev-link" href="${page}">${esc(o.title)}</a></h3>
+      <span class="sub">${hasTime(o) ? `${fmtTime(o.at)}${o.end ? `–${fmtTime(o.end)}` : ""} · ` : ""}${place ? `${place} · ` : ""}${esc(o.area)}</span>
       ${o.description ? `<p>${esc(o.description)}</p>` : ""}
-      <div class="ev-meta">${price}${o.ages?.length ? `<span class="note">${esc(ageText(o.ages))}</span>` : ""}${o.repeat_until ? '<span class="note">Every week</span>' : ""}${web ? `<a href="${esc(web)}" target="_blank" rel="noopener">More info</a>` : ""}
-        <details class="dir cal-add"><summary class="linkish">Add to my calendar</summary><div class="dir-menu" role="menu">
-          <button type="button" role="menuitem" data-ics="${shownOcc.push(o) - 1}">Apple or Outlook calendar</button>
-          <a role="menuitem" href="${gcalUrl(o)}" target="_blank" rel="noopener">Google Calendar</a></div></details></div>
+      <div class="ev-meta"><a class="ev-more" href="${page}">See details</a>${price}${o.ages?.length ? `<span class="note">${esc(ageText(o.ages))}</span>` : ""}${o.repeat_until ? '<span class="note">Every week</span>' : ""}${web ? `<a href="${esc(web)}" target="_blank" rel="noopener">More info</a>` : ""}
+        ${calMenu(o, shownOcc.push(o) - 1, new URL(page, location.origin).href)}</div>
     </div></article>`;
 }
 
