@@ -1,7 +1,7 @@
 import { addBasemap } from "./basemap.js";
 import { fetchEvent, fetchEvents, occurrences, PRICE, listingUrl, eventUrl } from "./data.js";
 import { $, esc, initHeader, ageText, safeUrl, share } from "./ui.js";
-import { fmtDay, fmtTime, hasTime, downloadIcs, calMenu } from "./event-cal.js";
+import { fmtDay, fmtTime, hasTime, downloadIcs, calMenu, eventCard } from "./event-cal.js";
 
 initHeader();
 
@@ -11,9 +11,6 @@ const now = new Date();
 const dayKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const CAL_ICON = '<svg viewBox="0 0 24 24" width="80" height="80" fill="none" stroke="#0F2A44" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12 13.2l.9 1.8 2 .3-1.45 1.4.35 2-1.8-.95-1.8.95.35-2L9.1 15.3l2-.3z"/></svg>';
 
-const TONES = ["lavender", "peach", "sky", "butter", "pink", "periwinkle", "mint"]; // same pastels as What's on
-const SMALL_ICON = CAL_ICON.replace('width="80" height="80"', 'width="40" height="40"');
-
 // a few other events coming up, for the bottom of the page and the "finished" message
 async function moreEvents(exceptId) {
   try {
@@ -22,11 +19,7 @@ async function moreEvents(exceptId) {
     const list = occurrences(await fetchEvents(), now, week2).filter(o => o.id !== exceptId && !seen.has(o.id) && seen.add(o.id)).slice(0, 4);
     if (!list.length) return "";
     return `<section class="block"><div class="sec-head"><div><h2>Also coming up</h2><p>More family events in the next two weeks.</p></div><a class="more" href="/whats-on.html">See the calendar</a></div>
-      <div class="ev-cards">${list.map((o, n) => { const im = safeUrl(o.image_url) || safeUrl(o.listing?.image_url); return `<a class="ev ev-tone ev-card t-${TONES[n % TONES.length]}" href="${eventUrl(o, o.at)}">
-        <div class="ev-img">${im ? `<img src="${esc(im)}" alt="" loading="lazy" decoding="async">` : SMALL_ICON}
-          <div class="ev-date" aria-hidden="true"><b>${o.at.getDate()}</b><span>${o.at.toLocaleDateString("en-GB", { month: "short" })}</span></div></div>
-        <div class="ev-body"><h3>${esc(o.title)}</h3><span class="sub">${o.at.toLocaleDateString("en-GB", { weekday: "short" })}${hasTime(o) ? " " + fmtTime(o.at) : ""} · ${esc(o.area)}</span>
-        ${o.price_band === 0 ? '<span class="tagpill free">Free</span>' : `<span class="tagpill">${esc(o.price_note || PRICE[o.price_band])}</span>`}</div></a>`; }).join("")}</div></section>`;
+      <div class="ev-cards">${list.map(eventCard).join("")}</div></section>`;
   } catch { return ""; }
 }
 

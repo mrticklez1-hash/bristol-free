@@ -735,3 +735,4 @@ a.ev-media { text-decoration: none; color: inherit; }
 .ev-card .ev-date span { font-size: 11px; }
 .ev-card .ev-body { padding: 14px 16px 16px; }
 @media (max-width: 640px) { .ev-cards { grid-template-columns: 1fr 1fr; gap: 12px; } .ev-card .ev-body { padding: 10px 12px 12px; } .ev-card .ev-body h3 { font-size: 16px; } }
+.tone .ev.ev-card { box-shadow: 0 2px 12px rgba(15,42,68,.09); }
